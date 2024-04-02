@@ -1,31 +1,31 @@
-resource "aws_iam_role" "beanstalk_api_ec2" {
+resource "aws_iam_role" "beanstalk_web_ec2" {
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   description           = "Allows EC2 instances to call AWS services on your behalf."
   force_detach_policies = false
   managed_policy_arns   = ["arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"]
   max_session_duration  = 3600
-  name                  = "aws-elasticbeanstalk-api-ec2"
+  name                  = "aws-elasticbeanstalk-web-ec2"
   path                  = "/"
 }
 
-resource "aws_iam_instance_profile" "beanstalk_api_ec2" {
-  name = "aws-elasticbeanstalk-api-ec2-profile"
-  role = aws_iam_role.beanstalk_api_ec2.name
+resource "aws_iam_instance_profile" "beanstalk_web_ec2" {
+  name = "aws-elasticbeanstalk-web-ec2-profile"
+  role = aws_iam_role.beanstalk_web_ec2.name
 }
 
-resource "aws_s3_bucket" "beanstalk_api_bucket" {
-  bucket        = "doc-lang-trans-api-deploy-bucket"
+resource "aws_s3_bucket" "beanstalk_web_bucket" {
+  bucket        = "doc-lang-trans-web-deploy-bucket"
   force_destroy = true
 }
 
-resource "aws_elastic_beanstalk_application" "api_app" {
-  name        = "api-app"
-  description = "App for C# API"
+resource "aws_elastic_beanstalk_application" "web_app" {
+  name        = "web-app"
+  description = "App for C# Web App"
 }
 
-resource "aws_elastic_beanstalk_environment" "api_env" {
-  name                = "api-env"
-  application         = aws_elastic_beanstalk_application.api_app.name
+resource "aws_elastic_beanstalk_environment" "web_env" {
+  name                = "web-env"
+  application         = aws_elastic_beanstalk_application.web_app.name
   solution_stack_name = "64bit Amazon Linux 2023 v3.0.5 running .NET 6"
   tier                = "WebServer"
 
