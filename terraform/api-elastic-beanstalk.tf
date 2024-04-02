@@ -4,12 +4,12 @@ resource "aws_iam_role" "beanstalk_ec2" {
   force_detach_policies = false
   managed_policy_arns   = ["arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"]
   max_session_duration  = 3600
-  name                  = "aws-elasticbeanstalk-ec2"
+  name                  = "aws-elasticbeanstalk-api-ec2"
   path                  = "/"
 }
 
 resource "aws_iam_instance_profile" "beanstalk_ec2" {
-  name = "aws-elasticbeanstalk-ec2-profile"
+  name = "aws-elasticbeanstalk-api-ec2-profile"
   role = aws_iam_role.beanstalk_ec2.name
 }
 

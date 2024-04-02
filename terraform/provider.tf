@@ -9,6 +9,7 @@ terraform {
 }
 
 provider "aws" {
+  profile = "bbd-grad"
   region = "eu-west-1"
   default_tags {
     tags = {
