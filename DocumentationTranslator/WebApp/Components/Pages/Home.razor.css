@@ -6,6 +6,14 @@ body {
 }
 
 /*Main CSS: */
+.smallContainer {
+    border: solid;
+    border-color: darkslategrey;
+    margin-bottom: 25px;
+    padding: 15px;
+
+}
+
 .mainDiv {
     display: flex;
     flex-direction: row;
