@@ -1,0 +1,3 @@
+# .NET compilation files
+bin/*
+obj/*
