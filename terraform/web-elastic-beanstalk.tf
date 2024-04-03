@@ -37,7 +37,7 @@ resource "aws_elastic_beanstalk_environment" "web_env" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.beanstalk_ec2.name
+    value     = aws_iam_instance_profile.beanstalk_web_ec2.name
   }
   setting {
     namespace = "aws:ec2:vpc"
