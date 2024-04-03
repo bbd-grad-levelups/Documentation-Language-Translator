@@ -14,7 +14,7 @@ resource "aws_iam_instance_profile" "beanstalk_web_ec2" {
 }
 
 resource "aws_s3_bucket" "beanstalk_web_bucket" {
-  bucket        = "doc-lang-trans-web-deploy-bucket"
+  bucket        = "doc-translator-web-deploy-bucket"
   force_destroy = true
 }
 

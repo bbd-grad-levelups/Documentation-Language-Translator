@@ -14,7 +14,7 @@ resource "aws_iam_instance_profile" "beanstalk_api_ec2" {
 }
 
 resource "aws_s3_bucket" "beanstalk_api_bucket" {
-  bucket        = "doc-lang-trans-api-deploy-bucket"
+  bucket        = "doc-translator-api-deploy-bucket"
   force_destroy = true
 }
 
