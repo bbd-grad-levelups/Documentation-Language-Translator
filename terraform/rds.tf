@@ -7,7 +7,7 @@ module "rds" {
   family               = "sqlserver-ex-16.0" # DB parameter group
   major_engine_version = "16.00"             # DB option group
   engine               = "sqlserver-ex"
-  engine_version       = "16.00"
+  engine_version       = "16.00.4115.5.v1"
   storage_encrypted    = false
 
   instance_class      = "db.t3.micro"
