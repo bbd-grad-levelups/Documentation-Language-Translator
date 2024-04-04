@@ -37,8 +37,8 @@ jobs:
         run: dotnet publish -o WebPackage
   
       - name: Create ZIP Package
-        working-directory: ${{env.web_directory}}/WebPackage
-        run: zip -r deploy_package.zip .
+        working-directory: ${{env.web_directory}}
+        run: zip -r deploy_package.zip ./WebPackage
   
       - name: Upload Web Package
         working-directory: ${{env.web_directory}}
