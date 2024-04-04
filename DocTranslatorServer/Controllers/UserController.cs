@@ -11,47 +11,47 @@ namespace DocTranslatorServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DocumentItemsController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly DocumentsContext _context;
+        private readonly UserContext _context;
 
-        public DocumentItemsController(DocumentsContext context)
+        public UserController(UserContext context)
         {
             _context = context;
         }
 
-        // GET: api/DocumentItems
+        // GET: api/User
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Documents>>> GetDocumentsItems()
+        public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
-            return await _context.DocumentsItems.ToListAsync();
+            return await _context.User.ToListAsync();
         }
 
-        // GET: api/DocumentItems/5
+        // GET: api/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Documents>> GetDocuments(long id)
+        public async Task<ActionResult<User>> GetUser(int id)
         {
-            var documents = await _context.DocumentsItems.FindAsync(id);
+            var user = await _context.User.FindAsync(id);
 
-            if (documents == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return documents;
+            return user;
         }
 
-        // PUT: api/DocumentItems/5
+        // PUT: api/User/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDocuments(long id, Documents documents)
+        public async Task<IActionResult> PutUser(int id, User user)
         {
-            if (id != documents.Id)
+            if (id != user.UserID)
             {
                 return BadRequest();
             }
 
-            _context.Entry(documents).State = EntityState.Modified;
+            _context.Entry(user).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace DocTranslatorServer.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DocumentsExists(id))
+                if (!UserExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace DocTranslatorServer.Controllers
             return NoContent();
         }
 
-        // POST: api/DocumentItems
+        // POST: api/User
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Documents>> PostDocuments(Documents documents)
+        public async Task<ActionResult<User>> PostUser(User user)
         {
-            _context.DocumentsItems.Add(documents);
+            _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDocuments", new { id = documents.Id }, documents);
+            return CreatedAtAction("GetUser", new { id = user.UserID }, user);
         }
 
-        // DELETE: api/DocumentItems/5
+        // DELETE: api/User/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDocuments(long id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var documents = await _context.DocumentsItems.FindAsync(id);
-            if (documents == null)
+            var user = await _context.User.FindAsync(id);
+            if (user == null)
             {
                 return NotFound();
             }
 
-            _context.DocumentsItems.Remove(documents);
+            _context.User.Remove(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool DocumentsExists(long id)
+        private bool UserExists(int id)
         {
-            return _context.DocumentsItems.Any(e => e.Id == id);
+            return _context.User.Any(e => e.UserID == id);
         }
     }
 }
