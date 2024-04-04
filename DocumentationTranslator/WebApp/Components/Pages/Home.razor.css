@@ -1,0 +1,92 @@
+﻿/*General stuff: */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+/*Main CSS: */
+.smallContainer {
+    border: solid;
+    border-color: darkslategrey;
+    margin-bottom: 25px;
+    padding: 15px;
+
+}
+
+.mainDiv {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+    .mainDiv .inputDiv {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 18%;
+        position: absolute;
+        left: 0;
+    }
+
+    .mainDiv .viewDiv {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: absolute;
+        left: 25%;
+    }
+
+    .mainDiv .fileDiv pre {
+        border: solid;
+        text-align: left;
+        min-height: 80vh;
+        min-width: 50vw;
+        max-height: 80vh;
+        max-width: 50vw;
+        overflow: hidden;
+        overflow-y: scroll;
+    }
+
+/*Specific things: */
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+button,
+select {
+    margin-top: 5px;
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    align-self: center;
+}
+
+select {
+    width: auto;
+    text-align: center;
+}
+
+button:hover,
+select:hover {
+    background-color: #45a049;
+}
+
+button:active,
+select:active {
+    background-color: #3e8e41;
+}
+
+button:focus,
+select:focus {
+    outline: none;
+}
+
+
