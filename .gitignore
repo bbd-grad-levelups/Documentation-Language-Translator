@@ -264,3 +264,6 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# Secrets
+frontend-cli/frontend-cli-app/client_secrets.json
