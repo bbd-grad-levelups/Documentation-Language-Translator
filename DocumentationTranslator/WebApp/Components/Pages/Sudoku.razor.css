@@ -1,0 +1,207 @@
+.main-container {
+    max-width: 1500px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: row
+}
+
+.difficulty-section {
+    margin-top: 125px;
+    width: 325px;
+}
+
+    .difficulty-section fieldset {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+        margin-right: 60px;
+        margin-left: 30px;
+    }
+
+        .difficulty-section fieldset legend {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .difficulty-section fieldset div {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+            .difficulty-section fieldset div input[type="radio"] {
+                margin-right: 5px;
+                margin-left: 65px;
+            }
+
+            .difficulty-section fieldset div label {
+                margin-left: 10px;
+                margin-top: 5px;
+            }
+
+.sudoku-section {
+    margin-top: 20px;
+    width: 500px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0ffff;
+    justify-items: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+    .sudoku-section label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .sudoku-section table {
+        border: 3px solid #000;
+        border-collapse: collapse;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+        .sudoku-section table td {
+            text-align: center;
+            width: 3em;
+            height: 3em;
+            border-left: 1px solid #707070;
+            border-top: 1px solid #707070;
+        }
+
+        .sudoku-section table tr:nth-child(3n) {
+            border-bottom: 2px solid #000;
+        }
+
+        .sudoku-section table td:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+
+        .sudoku-section table td:hover {
+            background-color: #ffdada !important;
+            cursor: pointer;
+        }
+
+        .sudoku-section table tr td.wrong {
+            background-color: #ff0a0a !important;
+        }
+
+        /* These can be chained together in the order in which they appear*/
+        .sudoku-section table tr td.starter {
+            font-weight: bold;
+        }
+
+        .sudoku-section table tr td.mainSelected {
+            background-color: #fae4a7 !important;
+        }
+
+        .sudoku-section table tr td.highlighted {
+            background-color: #faedc8 !important;
+        }
+
+        /* Here are the combinations:*/
+
+        .sudoku-section table tr td.starter-mainSelected {
+            font-weight: bold;
+            background-color: #fae4a7 !important;
+        }
+
+        .sudoku-section table tr td.starter-highlighted {
+            font-weight: bold;
+            background-color: #faedc8 !important;
+        }
+
+        /* Odd rows, odd columns; Even rows, even columns */
+        .sudoku-section table tr:nth-child(2n) td:nth-child(2n),
+        .sudoku-section table tr:nth-child(2n+1) td:nth-child(2n+1) {
+            background-color: #e3fffd;
+        }
+
+        /* Odd rows, even columns; Even rows, odd columns */
+        .sudoku-section table tr:nth-child(2n) td:nth-child(2n+1),
+        .sudoku-section table tr:nth-child(2n+1) td:nth-child(2n) {
+            background-color: #d5e9ed;
+        }
+
+
+.sudoku-inputs {
+    margin-top: 20px;
+    margin-left: 75px;
+    width: 250px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0ffff;
+    justify-items: center;
+    align-items: center;
+    border-radius: 8px;
+    border: 2px solid #000;
+    justify-self: center;
+    align-self: center;
+}
+
+    .sudoku-inputs table {
+        margin-top: 27px;
+    }
+
+        .sudoku-inputs table tr td {
+            width: 3em;
+            height: 3em;
+            border: 1px solid #000;
+            text-align: center;
+            text-justify: inter-character;
+            background-color: aquamarine;
+        }
+
+        .sudoku-inputs table td:hover {
+            background-color: #daffda !important;
+            cursor: pointer;
+        }
+
+
+.sudoku-done {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+    .sudoku-done label {
+        display: block;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+.sudoku-failed {
+    background-color: #AF4C50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.sudoku-done label {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}

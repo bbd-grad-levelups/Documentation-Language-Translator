@@ -1,0 +1,102 @@
+﻿@page "/Sudoku"
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+<head>
+	<link rel="stylesheet" href="Home.razor.css" />
+</head>
+
+<PageTitle>Sudoku App</PageTitle>
+<div class="main-container">
+
+	<div class="difficulty-section">
+		<fieldset>
+			<legend>Difficulty:</legend>
+			<div>
+				<input type="radio" id="easy" name="difficulty" value="easy" checked @onclick="() => setDifficulty(0)">
+				<label for="easy">Easy</label>
+			</div>
+
+			<div>
+				<input type="radio" id="medium" name="difficulty" value="medium" @onclick="() => setDifficulty(1)">
+				<label for="medium">Medium</label>
+			</div>
+
+			<div>
+				<input type="radio" id="hard" name="difficulty" value="hard" @onclick="() => setDifficulty(2)">
+				<label for="hard">Hard</label>
+			</div>
+		</fieldset>
+	</div>
+
+	<div class="sudoku-section">
+		<label> Sudoku Grid: </label>
+		<div>
+			<table>
+				@for(int row = 0; row < sudokuAnswer.GetLength(0); row++)
+				{
+					<tr>
+						@for(int col = 0; col < sudokuAnswer.GetLength(1); col++)
+						{
+							int locRow = row, locCol = col;
+							int temp = sudokuGrid[row, col];
+							char currVal = ' ';
+							if(temp > 0)
+							{
+								currVal = (char)('0' + temp);
+							}
+							<td @onclick="() => CellClicked(locRow, locCol)"
+								class="() => @GetCellCssClass(locRow, locCol)">
+								@currVal
+							</td>
+						}
+					</tr>
+				}
+			</table>
+		</div>
+	</div>
+
+	<div class="sudoku-inputs">
+		<table class="sudoku-input-pad">
+			@for(int row = 0; row < 3; row++)
+			{
+				<tr>
+					@for(int col = 0; col < 3; col++)
+					{
+						var temp = 3 * @row + @col + 1;
+						<td @onclick="() => InputClicked(temp)">@temp</td>
+					}
+				</tr>
+			}
+			<tr>
+				<td colspan="3" @onclick="() => InputClicked(0)">ERASE</td>
+			</tr>
+			<tr>
+				<td colspan="3" @onclick="() => SolveSudoku()">SOLVE!</td>
+			</tr>
+		</table>
+	</div>
+
+</div>
+
+@if(isFailed)
+{
+	<div class="sudoku-failed" @onclick="()=>OnInitialized()">
+		<label>You failed :(</label>
+		<label>Click me for a new puzzle to try again :)</label>
+	</div>
+}
+else
+{
+	if(isFinished)
+	{
+		<div class="sudoku-done" @onclick="()=>OnInitialized()">
+			<label>Well done, you finished it!</label>
+			<label>Click me for a new puzzle :)</label>
+		</div>
+	}
+}
+
+
+
+
