@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>frontend_cli_tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -18,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\frontend-cli-app\frontend-cli-app.csproj" />
+    <ProjectReference Include="..\Cli\Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

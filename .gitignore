@@ -266,4 +266,4 @@ FakesAssemblies/
 *.opt
 
 # Secrets
-frontend-cli/frontend-cli-app/client_secrets.json
+DocumentationTranslator/Cli/client_secrets.json

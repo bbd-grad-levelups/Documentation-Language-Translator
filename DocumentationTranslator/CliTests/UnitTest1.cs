@@ -1,4 +1,4 @@
-namespace frontend_cli_tests
+namespace CliTests
 {
     public class UnitTest1
     {
