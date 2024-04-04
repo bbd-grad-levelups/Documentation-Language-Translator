@@ -26,7 +26,7 @@ resource "aws_elastic_beanstalk_application" "web_app" {
 resource "aws_elastic_beanstalk_environment" "web_env" {
   name                = "web-env"
   application         = aws_elastic_beanstalk_application.web_app.name
-  solution_stack_name = "64bit Amazon Linux 2023 v3.0.5 running .NET 6"
+  solution_stack_name = "64bit Windows Server 2022 v2.14.1 running IIS 10.0"
   tier                = "WebServer"
 
   setting {
