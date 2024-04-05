@@ -12,11 +12,11 @@ public class Language
 
     [Required]
     [StringLength(100)]
-    public string LanguageName { get; set; }
+    public string? LanguageName { get; set; }
 
     [Required]
     [StringLength(5)]
-    public string Abbreviation { get; set; }
+    public string? Abbreviation { get; set; }
 
-    public virtual ICollection<Document> Documents { get; set; }
+    public virtual ICollection<Document>? Documents { get; set; }
 }

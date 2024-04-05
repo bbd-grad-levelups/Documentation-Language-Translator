@@ -12,7 +12,7 @@ public class User
 
     [Required]
     [StringLength(100)]
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
-    public virtual ICollection<Document> Documents { get; set; }
+    public virtual ICollection<Document>? Documents { get; set; }
 }

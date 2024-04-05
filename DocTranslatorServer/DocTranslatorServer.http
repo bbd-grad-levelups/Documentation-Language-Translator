@@ -1,6 +1,0 @@
-@DocTranslatorServer_HostAddress = http://localhost:5102
-
-GET {{DocTranslatorServer_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
