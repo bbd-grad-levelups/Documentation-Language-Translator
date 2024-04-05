@@ -14,8 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DocumentContext>(opt =>
-    opt.UseInMemoryDatabase("DocumentList"));
-    // opt.UseSqlServer("localDB"));
+    opt.UseInMemoryDatabase("localDB"));
 builder.Services.AddDbContext<UserContext>(opt => 
     opt.UseInMemoryDatabase("localDB"));
 builder.Services.AddDbContext<LanguageContext>(opt =>
@@ -24,7 +23,8 @@ builder.Services.AddDbContext<LanguageContext>(opt =>
 
 // Add middleware
 builder.Services.AddHttpClient();
-builder.Services.AddTransient<GitHubValidation>();
+builder.Services.AddTransient<OAuthMiddleWare>();
+builder.Services.AddTransient<UserDetectionMiddleWare>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -34,18 +34,13 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-// Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-// }
-// else 
-// {
-//     app.UseMiddleware<GitHubValidation>(); // Add the middleware here
-// }
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
+
+app.UseMiddleware<OAuthMiddleWare>();
+app.UseMiddleware<UserDetectionMiddleWare>();
 
 app.MapControllers();
 

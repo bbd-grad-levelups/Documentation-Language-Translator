@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace DocTranslatorServer.Controllers;
 
-
 [ApiController]
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
@@ -37,17 +36,18 @@ public class WeatherForecastController : ControllerBase
   [HttpGet("test")]
   public async Task<string> TestCall(string translatedString, string language)
   {
+    string endpoint = "microsoft-translator-text.p.rapidapi.com";
     var client = new HttpClient();
     var request = new HttpRequestMessage
     {
       Method = HttpMethod.Post,
-      RequestUri = new Uri($"https://microsoft-translator-text.p.rapidapi.com/translate?to%5B0%5D={language}&api-version=3.0&profanityAction=NoAction&textType=plain"),
+      RequestUri = new Uri($"https://{endpoint}/translate?to%5B0%5D={language}&api-version=3.0&profanityAction=NoAction&textType=plain"),
       Headers =
         {
             { "X-RapidAPI-Key", "d91f0fc765mshf6a55b818ddc0edp1e5181jsn85bae4e96f78" },
-            { "X-RapidAPI-Host", "microsoft-translator-text.p.rapidapi.com" },
+            { "X-RapidAPI-Host", endpoint },
         },
-      Content = new StringContent("[\r\n    {\r\n        \"Text\": \"" + translatedString + "\"\r\n    }\r\n]")
+      Content = new StringContent($"[{{\"Text\": \"{translatedString}\"    }}]")
       {
         Headers =
             {
@@ -56,11 +56,9 @@ public class WeatherForecastController : ControllerBase
       }
     };
 
-    using (var response = await client.SendAsync(request))
-    {
-      response.EnsureSuccessStatusCode();
-      var body = await response.Content.ReadAsStringAsync();
-      return body; // Return the translated text
-    }
+    using var response = await client.SendAsync(request);
+    response.EnsureSuccessStatusCode();
+    var body = await response.Content.ReadAsStringAsync();
+    return body; // Return the translated text
   }
 }
