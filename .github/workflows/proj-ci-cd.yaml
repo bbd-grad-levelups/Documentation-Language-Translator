@@ -12,12 +12,19 @@ permissions:
 
 jobs:
   proj-ci:
-    name: "CI"
+    name: CI
     uses: ./.github/workflows/proj-ci.yaml
     secrets: inherit
 
-  terraform-apply:
-    name: "Terraform apply"
+  terraform-cd:
+    name: Terraform CD
     needs: proj-ci
     secrets: inherit
     uses: ./.github/workflows/terraform-cd.yaml
+
+  app-cd:
+    name: App CD
+    needs: terraform-cd
+    secrets: inherit
+    uses: ./.github/workflows/app-cd.yaml
+    

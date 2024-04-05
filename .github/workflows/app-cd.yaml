@@ -1,0 +1,51 @@
+name: Application CD
+
+on:
+  workflow_call:
+
+permissions:
+  checks: write
+  contents: read
+  id-token: write
+
+jobs:
+  web-deploy:
+    name: Web Deploy
+    runs-on: ubuntu-latest
+    
+    env:
+      web_directory: ./DocumentationTranslator/WebApp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+          aws-region: eu-west-1
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build Web
+        working-directory: ${{env.web_directory}}
+        run: dotnet publish -o WebPackage
+  
+      - name: Create ZIP Package
+        working-directory: ${{env.web_directory}}
+        run: zip -r deploy_package.zip ./WebPackage
+  
+      - name: Upload Web Package
+        working-directory: ${{env.web_directory}}
+        run: aws s3 cp deploy_package.zip s3://doc-translator-web-deploy-bucket
+  
+      - name: Create New Web Version
+        run: aws elasticbeanstalk create-application-version --application-name web-app --source-bundle S3Bucket="doc-translator-web-deploy-bucket",S3Key="deploy_package.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+  
+      - name: Deploy Web
+        run: aws elasticbeanstalk update-environment --environment-name web-env --version-label "deploy-${{ github.sha }}"
