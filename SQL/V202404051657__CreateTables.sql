@@ -1,0 +1,20 @@
+CREATE TABLE Users (
+  UserID INT IDENTITY(1,1) PRIMARY KEY,
+  Username NVARCHAR(255)
+);
+
+CREATE TABLE Languages (
+  LanguageID INT IDENTITY(1,1) PRIMARY KEY,
+  Language NVARCHAR(50),
+  Abbreviation VARCHAR(5)
+);
+
+CREATE TABLE Documents (
+  DocumentID INT IDENTITY(1,1) PRIMARY KEY,
+  UserID INT,
+  LanguageID INT,
+  GenTime DATETIME DEFAULT CURRENT_TIMESTAMP,
+  Path NVARCHAR(255),
+  FOREIGN KEY (UserID) REFERENCES Users(UserID),
+  FOREIGN KEY (LanguageID) REFERENCES Languages(LanguageID)
+);
