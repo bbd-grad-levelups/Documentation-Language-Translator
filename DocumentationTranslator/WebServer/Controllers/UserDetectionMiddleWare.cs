@@ -1,7 +1,4 @@
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using DocTranslatorServer.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace DocTranslatorServer.Controllers;
 public class UserDetectionMiddleWare : IMiddleware

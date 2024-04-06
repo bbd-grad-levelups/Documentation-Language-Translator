@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DocTranslatorServer.Models;
@@ -82,7 +77,6 @@ namespace DocTranslatorServer.Controllers
 
             return CreatedAtAction("GetDocument", new { id = document.DocumentID }, document);
         }
-
 
         [HttpPost("test")]
         public async Task<ActionResult<Document>> PostDocument(string path, int userId)
