@@ -264,3 +264,6 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# Secrets
+DocumentationTranslator/Cli/client_secrets.json
