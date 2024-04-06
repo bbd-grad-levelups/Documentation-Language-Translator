@@ -28,12 +28,7 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/app-cd.yaml
     
-  prod-db-ci:
-    name: RunMigration
-    runs-on: ubuntu-20.04         
-    steps:
-      - name: RunMigration
-        uses: actions/checkout@v3.0.0
-      - run: wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.11.0/flyway-commandline-10.11.0-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-10.11.0/flyway /usr/local/bin
-      - run: flyway -user="${{ secrets.DB_USERNAME }}" -password="${{ secrets.DB_PASSWORD }}" -url="${{ secrets.DB_URL_PROD }}" info
-      - run: flyway -user="${{ secrets.DB_USERNAME }}" -password="${{ secrets.DB_PASSWORD }}" -url="${{ secrets.DB_URL_PROD }}" migrate
+  db-cd:
+    name: "Flyway Migration"
+    secrets: inherit
+    uses: ./.github/workflows/db-cd.yaml

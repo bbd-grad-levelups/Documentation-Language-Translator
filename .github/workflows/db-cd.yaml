@@ -1,0 +1,42 @@
+name: Database CD
+
+on:
+  workflow_call:
+
+permissions:
+  checks: write
+  contents: read
+  id-token: write
+
+jobs:
+  migrate_db:
+    name: Migrate DB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+          aws-region: "eu-west-1"
+          role-session-name: Database_CD_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Get DB credentials
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2.0.1
+        with:
+          secret-ids: |
+            DB_DETAILS, rds*
+          parse-json-secrets: true
+
+      - name: Fetch AWS RDS endpoint
+        run: |
+          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier beanfarmdb --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
+    
+      - name: Migration to Dev
+        run: |
+            wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.11.0/flyway-commandline-10.11.0-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-10.11.0/flyway /usr/local/bin
+            export DB_URL = "jdbc:sqlserver://${{env.DB_ENDPOINT}}:1433;authentication=sqlPassword;databaseName=DocTranslatorDb_Prod;encrypt=false;trustServerCertificate=true"
+            flyway -user="${{env.DB_DETAILS_USERNAME}}" -password="${{env.DB_DETAILS_PASSWORD}}" -url=$DB_URL info
+            flyway -user="${{env.DB_DETAILS_USERNAME}}" -password="${{env.DB_DETAILS_PASSWORD}}" -url=$DB_URL migrate

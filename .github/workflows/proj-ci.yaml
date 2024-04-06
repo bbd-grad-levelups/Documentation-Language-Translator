@@ -17,13 +17,7 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/terraform-ci.yaml
 
-  dev-db-cd:
-    if: github.event_name == 'push' == true
-    name: FlywayDev
-    runs-on: ubuntu-20.04         
-    steps:
-      - name: FlywayDev
-        uses: actions/checkout@v3.0.0
-      - run: wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.11.0/flyway-commandline-10.11.0-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-10.11.0/flyway /usr/local/bin
-      - run: flyway -user="${{ secrets.DB_USERNAME }}" -password="${{ secrets.DB_PASSWORD }}" -url="${{ secrets.DB_URL_DEV }}" info
-      - run: flyway -user="${{ secrets.DB_USERNAME }}" -password="${{ secrets.DB_PASSWORD }}" -url="${{ secrets.DB_URL_DEV }}" migrate
+  test-database-migration:
+    name: "Flyway Migration Testing"
+    secrets: inherit
+    uses: ./.github/workflows/db-ci.yaml
