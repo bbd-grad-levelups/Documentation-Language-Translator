@@ -1,26 +1,26 @@
-resource "aws_iam_role" "beanstalk_web_ec2" {
+resource "aws_iam_role" "beanstalk_ec2" {
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   description           = "Allows EC2 instances to call AWS services on your behalf."
   force_detach_policies = false
   managed_policy_arns   = ["arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"]
   max_session_duration  = 3600
-  name                  = "aws-elasticbeanstalk-web-ec2"
+  name                  = "aws-elasticbeanstalk-ec2"
   path                  = "/"
 }
 
-resource "aws_iam_instance_profile" "beanstalk_web_ec2" {
-  name = "aws-elasticbeanstalk-web-ec2-profile"
-  role = aws_iam_role.beanstalk_web_ec2.name
+resource "aws_iam_instance_profile" "beanstalk_ec2" {
+  name = "aws-elasticbeanstalk-ec2-profile"
+  role = aws_iam_role.beanstalk_api_ec2.name
 }
 
-resource "aws_elastic_beanstalk_application" "web_app" {
-  name        = "web-app"
-  description = "App for C# Web App"
+resource "aws_elastic_beanstalk_application" "beanstalk_app" {
+  name        = "doc-translator-app"
+  description = "App for Doc Translator"
 }
 
-resource "aws_elastic_beanstalk_environment" "web_env" {
-  name                = "web-env"
-  application         = aws_elastic_beanstalk_application.web_app.name
+resource "aws_elastic_beanstalk_environment" "api_env" {
+  name                = "doc-translator-env"
+  application         = aws_elastic_beanstalk_application.api_app.name
   solution_stack_name = "64bit Windows Server 2022 v2.14.1 running IIS 10.0"
   tier                = "WebServer"
 
@@ -32,7 +32,7 @@ resource "aws_elastic_beanstalk_environment" "web_env" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.beanstalk_web_ec2.name
+    value     = aws_iam_instance_profile.beanstalk_ec2.name
   }
   setting {
     namespace = "aws:ec2:vpc"
