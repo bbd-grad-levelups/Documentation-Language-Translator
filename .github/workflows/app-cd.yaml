@@ -38,7 +38,9 @@ jobs:
   
       - name: Create Deployment Package
         working-directory: ${{env.web_directory}}
-        run: cd build; zip -r ../deploy.zip . -x '*.git*'; cd ..
+        run: | 
+          cd build
+          zip -r ../deploy.zip . -x '*.git*'
   
       # - name: Upload Web Package
       #   working-directory: ${{env.web_directory}}
@@ -57,7 +59,7 @@ jobs:
           environment_name: web-env
           version_label: "api-deployment-${{ github.sha }}"
           region: eu-west-1
-          deployment_package: deploy.zip
+          deployment_package: ${{env.web_directory}}/deploy.zip
 
   # web-deploy:
   #   name: Web Deploy
