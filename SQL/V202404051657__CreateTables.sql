@@ -14,7 +14,7 @@ CREATE TABLE Documents (
   UserID INT,
   LanguageID INT,
   GenTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-  Path NVARCHAR(255),
+  DocumentName NVARCHAR(255),
   FOREIGN KEY (UserID) REFERENCES Users(UserID),
   FOREIGN KEY (LanguageID) REFERENCES Languages(LanguageID)
 );
