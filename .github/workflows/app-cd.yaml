@@ -56,7 +56,7 @@ jobs:
       - name: Create Deployment Package
         run: | 
           aws s3 cp s3://doc-translator-deploy-bucket/aws-windows-deployment-manifest.json aws-windows-deployment-manifest.json
-          zip deployment.zip ${{env.api_directory}}/api.zip ${{env.web_directory}}/web.zip aws-windows-deployment-manifest.json
+          zip deployment.zip ${{env.api_directory}}/api.zip ${{env.web_directory}}/web.zip aws-windows-deployment-manifest.json --no-dir-entries
 
       - name: Deploy Web
         uses: einaregilsson/beanstalk-deploy@v21
