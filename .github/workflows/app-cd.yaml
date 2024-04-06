@@ -60,3 +60,55 @@ jobs:
           region: eu-west-1
           deployment_package: ${{env.web_directory}}/deployment.zip
           existing_bucket_name: doc-translator-deploy-bucket
+
+  api-deploy:
+    name: API Deploy
+    runs-on: ubuntu-latest
+    
+    env:
+      web_directory: ./DocumentationTranslator/WebServer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+          aws-region: eu-west-1
+          role-session-name: Web_CD_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build Web
+        working-directory: ${{env.web_directory}}
+        run: dotnet publish -o build
+  
+      - name: Create Build Package
+        working-directory: ${{env.web_directory}}
+        run: | 
+          cd build
+          zip -r ../build.zip . -x '*.git*'
+
+      - name: Create Deployment Package
+        working-directory: ${{env.web_directory}}
+        run: | 
+          aws s3 cp s3://doc-translator-deploy-bucket/aws-windows-deployment-manifest.json aws-windows-deployment-manifest.json
+          zip deployment.zip build.zip aws-windows-deployment-manifest.json
+
+      - name: Deploy Web
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws_session_token: ${{ env.AWS_SESSION_TOKEN }}
+          application_name: web-app
+          environment_name: web-env
+          version_label: "api-deployment-${{ github.sha }}"
+          region: eu-west-1
+          deployment_package: ${{env.web_directory}}/deployment.zip
+          existing_bucket_name: doc-translator-deploy-bucket
