@@ -9,12 +9,12 @@ permissions:
   id-token: write
 
 jobs:
-  web-deploy:
-    name: Web Deploy
+  api-deploy:
+    name: API Deploy
     runs-on: ubuntu-latest
     
     env:
-      web_directory: ./DocumentationTranslator/WebApp
+      web_directory: ./DocumentationTranslator/WebServer
 
     steps:
       - name: Checkout
@@ -32,20 +32,69 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup EB CLI
+        run: |
+          python --version
+          pip --version
+          pip install awsebcli --upgrade --user
+          eb --version
+
       - name: Build Web
         working-directory: ${{env.web_directory}}
-        run: dotnet publish -o WebPackage
+        run: dotnet publish -o build
   
-      - name: Create ZIP Package
+      - name: Create Deployment Package
         working-directory: ${{env.web_directory}}
-        run: zip -r deploy_package.zip ./WebPackage
+        run: cd build; zip -r ../deploy.zip . -x '*.git*'; cd ..
   
-      - name: Upload Web Package
-        working-directory: ${{env.web_directory}}
-        run: aws s3 cp deploy_package.zip s3://doc-translator-web-deploy-bucket
+      # - name: Upload Web Package
+      #   working-directory: ${{env.web_directory}}
+      #   run: aws s3 cp deploy_package.zip s3://doc-translator-web-deploy-bucket
   
-      - name: Create New Web Version
-        run: aws elasticbeanstalk create-application-version --application-name web-app --source-bundle S3Bucket="doc-translator-web-deploy-bucket",S3Key="deploy_package.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+      # - name: Create New Web Version
+      #   run: aws elasticbeanstalk create-application-version --application-name web-app --source-bundle S3Bucket="doc-translator-web-deploy-bucket",S3Key="deploy_package.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
   
       - name: Deploy Web
-        run: aws elasticbeanstalk update-environment --environment-name web-env --version-label "deploy-${{ github.sha }}"
+        # run: aws elasticbeanstalk update-environment --environment-name web-env --version-label "deploy-${{ github.sha }}"
+        run: eb deploy api-env --staged --label "api-deploy-${{ github.sha }}" --message "GitHub deployment commit-sha-${{ github.sha }}"
+
+  # web-deploy:
+  #   name: Web Deploy
+  #   runs-on: ubuntu-latest
+    
+  #   env:
+  #     web_directory: ./DocumentationTranslator/WebApp
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@main
+
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@main
+  #       with:
+  #         role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+  #         aws-region: eu-west-1
+  #         role-session-name: GitHub_to_AWS_via_FederatedOIDC
+
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: '8.0.x'
+
+  #     - name: Build Web
+  #       working-directory: ${{env.web_directory}}
+  #       run: dotnet publish -o WebPackage
+  
+  #     - name: Create ZIP Package
+  #       working-directory: ${{env.web_directory}}
+  #       run: zip -r deploy_package.zip ./WebPackage
+  
+  #     - name: Upload Web Package
+  #       working-directory: ${{env.web_directory}}
+  #       run: aws s3 cp deploy_package.zip s3://doc-translator-web-deploy-bucket
+  
+  #     - name: Create New Web Version
+  #       run: aws elasticbeanstalk create-application-version --application-name web-app --source-bundle S3Bucket="doc-translator-web-deploy-bucket",S3Key="deploy_package.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+  
+  #     - name: Deploy Web
+  #       run: aws elasticbeanstalk update-environment --environment-name web-env --version-label "deploy-${{ github.sha }}"
