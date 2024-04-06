@@ -4,21 +4,24 @@ using DocTranslatorServer.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+
 // builder.Services.AddDbContext<LanguageContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("LanguageContext") ?? throw new InvalidOperationException("Connection string 'LanguageContext' not found.")));
+//      options.UseSqlServer(builder.Configuration.GetConnectionString("DbContext") ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 // builder.Services.AddDbContext<UserContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Connection string 'UserContext' not found.")));
+//      options.UseSqlServer(builder.Configuration.GetConnectionString("DbContext") ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 // builder.Services.AddDbContext<DocumentContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DocumentContext") ?? throw new InvalidOperationException("Connection string 'DocumentContext' not found.")));
+//      options.UseSqlServer(builder.Configuration.GetConnectionString("DbContext") ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddDbContext<DocumentContext>(opt =>
-    opt.UseInMemoryDatabase("localDB"));
+   opt.UseInMemoryDatabase(builder.Configuration.GetConnectionString("DbLocal") ?? throw new InvalidOperationException("local DB connection string not found!")));
 builder.Services.AddDbContext<UserContext>(opt => 
-    opt.UseInMemoryDatabase("localDB"));
+   opt.UseInMemoryDatabase(builder.Configuration.GetConnectionString("DbLocal") ?? throw new InvalidOperationException("local DB connection string not found!")));
 builder.Services.AddDbContext<LanguageContext>(opt =>
-    opt.UseInMemoryDatabase("localDB"));
+   opt.UseInMemoryDatabase(builder.Configuration.GetConnectionString("DbLocal") ?? throw new InvalidOperationException("local DB connection string not found!")));
 
 
 // Add middleware

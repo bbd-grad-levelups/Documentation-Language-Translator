@@ -14,9 +14,5 @@ public class User
     [StringLength(100)]
     public string? Username { get; set; }
 
-    [Required]
-    [StringLength(200)]
-    public string? UserUID { get; set; }
-
     public virtual ICollection<Document>? Documents { get; set; }
 }

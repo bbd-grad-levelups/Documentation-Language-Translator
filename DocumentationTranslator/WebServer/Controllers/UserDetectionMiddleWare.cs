@@ -18,21 +18,19 @@ public class UserDetectionMiddleWare : IMiddleware
   public async Task InvokeAsync(HttpContext context, RequestDelegate next)
   {
     
-    string? userName = context.Items["UserName"] as string ?? "unknown";
-    string? userUID = context.Items["UID"] as string ?? "unknown";
+    string userName = context.Items["UserName"] as string ?? "unknown";
 
-    if (!_context.User.Any(e => e.UserUID == userUID)) 
+    if (!_context.User.Any(e => e.Username == userName)) 
     {
       var newUser = new User() {
         UserID = 0,
-        Username = userName,
-        UserUID = userUID
+        Username = userName
       };
       _context.Add(newUser);
       _context.SaveChanges();
     }
 
-    var user = _context.User.FirstOrDefault(u => u.UserUID == userUID) ?? new User();
+    var user = _context.User.FirstOrDefault(u => u.Username == userName) ?? new User();
 
     context.Items["userID"] = user.UserID;
 
