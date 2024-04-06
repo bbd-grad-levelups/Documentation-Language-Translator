@@ -10,7 +10,7 @@ resource "aws_iam_role" "beanstalk_ec2" {
 
 resource "aws_iam_instance_profile" "beanstalk_ec2" {
   name = "aws-elasticbeanstalk-ec2-profile"
-  role = aws_iam_role.beanstalk_api_ec2.name
+  role = aws_iam_role.beanstalk_ec2.name
 }
 
 resource "aws_elastic_beanstalk_application" "beanstalk_app" {
@@ -18,9 +18,9 @@ resource "aws_elastic_beanstalk_application" "beanstalk_app" {
   description = "App for Doc Translator"
 }
 
-resource "aws_elastic_beanstalk_environment" "api_env" {
+resource "aws_elastic_beanstalk_environment" "beanstalk_env" {
   name                = "doc-translator-env"
-  application         = aws_elastic_beanstalk_application.api_app.name
+  application         = aws_elastic_beanstalk_application.beanstalk_app.name
   solution_stack_name = "64bit Windows Server 2022 v2.14.1 running IIS 10.0"
   tier                = "WebServer"
 
