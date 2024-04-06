@@ -13,11 +13,6 @@ resource "aws_iam_instance_profile" "beanstalk_web_ec2" {
   role = aws_iam_role.beanstalk_web_ec2.name
 }
 
-resource "aws_s3_bucket" "beanstalk_web_bucket" {
-  bucket        = "doc-translator-web-deploy-bucket"
-  force_destroy = true
-}
-
 resource "aws_elastic_beanstalk_application" "web_app" {
   name        = "web-app"
   description = "App for C# Web App"

@@ -45,7 +45,7 @@ jobs:
       - name: Create Deployment Package
         working-directory: ${{env.web_directory}}
         run: | 
-          echo ${{ env.EB_DEPLOYMENT_MANIFEST }} >> aws-windows-deployment-manifest.json
+          aws s3 cp s3://doc-translator-deploy-bucket/aws-windows-deployment-manifest.json aws-windows-deployment-manifest.json
           zip deployment.zip build.zip aws-windows-deployment-manifest.json
 
       # - name: Upload Web Package
@@ -66,6 +66,7 @@ jobs:
           version_label: "api-deployment-${{ github.sha }}"
           region: eu-west-1
           deployment_package: ${{env.web_directory}}/deployment.zip
+          existing_bucket_name: doc-translator-deploy-bucket
 
   # web-deploy:
   #   name: Web Deploy

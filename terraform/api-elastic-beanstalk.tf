@@ -13,11 +13,6 @@ resource "aws_iam_instance_profile" "beanstalk_api_ec2" {
   role = aws_iam_role.beanstalk_api_ec2.name
 }
 
-resource "aws_s3_bucket" "beanstalk_api_bucket" {
-  bucket        = "doc-translator-api-deploy-bucket"
-  force_destroy = true
-}
-
 resource "aws_elastic_beanstalk_application" "api_app" {
   name        = "api-app"
   description = "App for C# API"
