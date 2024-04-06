@@ -65,7 +65,7 @@ jobs:
           environment_name: api-env
           version_label: "api-deployment-${{ github.sha }}"
           region: eu-west-1
-          deployment_package: ${{env.web_directory}}/deploy.zip
+          deployment_package: ${{env.web_directory}}/deployment.zip
 
   # web-deploy:
   #   name: Web Deploy
