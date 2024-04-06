@@ -32,7 +32,7 @@ jobs:
 
       - name: Fetch AWS RDS endpoint
         run: |
-          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier beanfarmdb --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
+          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier doc-translator-db --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
     
       - name: Migration to Dev
         run: |

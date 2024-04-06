@@ -32,9 +32,9 @@ jobs:
 
       - name: Fetch AWS RDS endpoint
         run: |
-          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier beanfarmdb --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
+          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier doc-translator-db --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
     
-      - name: Migration to Dev
+      - name: Migration Test
         run: |
             wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.11.0/flyway-commandline-10.11.0-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-10.11.0/flyway /usr/local/bin
             export DB_URL="jdbc:sqlserver://${{env.DB_ENDPOINT}}:1433;authentication=sqlPassword;databaseName=DocTranslatorDb_Dev;encrypt=false;trustServerCertificate=true"
