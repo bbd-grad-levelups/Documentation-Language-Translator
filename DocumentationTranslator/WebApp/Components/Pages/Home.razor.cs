@@ -40,15 +40,15 @@ public partial class Home
 			{
 				code = queryParams["code"];
 
-				Console.WriteLine("This is the auth code:");
-				Console.WriteLine(code);
+				//Console.WriteLine("This is the auth code:");
+				//Console.WriteLine(code);
 
 				await GetTokens();
 
-				Console.WriteLine("ID Token");
-				Console.WriteLine(idToken);
-				Console.WriteLine("Access Token");
-				Console.WriteLine(accessToken);
+				//Console.WriteLine("ID Token");
+				//Console.WriteLine(idToken);
+				//Console.WriteLine("Access Token");
+				//Console.WriteLine(accessToken);
 			}
 			else
 			{
@@ -57,8 +57,8 @@ public partial class Home
 		}
 		else if(idToken != "")
 		{
-			Console.WriteLine("Already logged in");
-			Console.WriteLine(idToken);
+			//Console.WriteLine("Already logged in");
+			//Console.WriteLine(idToken);
 		}
 		else
 		{
@@ -111,8 +111,8 @@ public partial class Home
 				if(jsonDoc.RootElement.TryGetProperty("access_token", out JsonElement accessTokenElement) &&
 					jsonDoc.RootElement.TryGetProperty("id_token", out JsonElement idTokenElement))
 				{
-					Console.WriteLine("Writing tokens");
-					Console.WriteLine(accessTokenElement);
+					//Console.WriteLine("Writing tokens");
+					//Console.WriteLine(accessTokenElement);
 					accessToken = accessTokenElement.GetString();
 					idToken = idTokenElement.GetString();
 				}

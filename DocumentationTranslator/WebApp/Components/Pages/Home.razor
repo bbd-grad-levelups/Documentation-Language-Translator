@@ -48,19 +48,27 @@
 @code {
 	private async Task HandleFileSelected(InputFileChangeEventArgs e)
 	{
-		var file = e.GetMultipleFiles().FirstOrDefault();
-
-		if(file != null)
+		try
 		{
-			var fileStream = file.OpenReadStream();
-			using var reader = new StreamReader(fileStream);
-			var contents = await reader.ReadToEndAsync();
-
-			// Update UI using InvokeAsync
-			await InvokeAsync(() =>
+			var file = e.GetMultipleFiles().FirstOrDefault();
+			if(file != null)
 			{
-				fileContent = contents;
-			});
+				var fileStream = file.OpenReadStream();
+				using var reader = new StreamReader(fileStream);
+				var contents = await reader.ReadToEndAsync();
+
+				// Update UI using InvokeAsync
+				await InvokeAsync(() =>
+				{
+					fileContent = contents;
+				});
+				Console.WriteLine("Exception info: " + file.Name);
+				return;
+			}
+		} catch (Exception exception)
+		{
+			Console.WriteLine("Exception info: " + exception.Message);
 		}
+
 	}
 }
