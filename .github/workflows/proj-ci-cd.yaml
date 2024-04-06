@@ -28,3 +28,7 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/app-cd.yaml
     
+  db-cd:
+    name: "Flyway Migration"
+    secrets: inherit
+    uses: ./.github/workflows/db-cd.yaml
