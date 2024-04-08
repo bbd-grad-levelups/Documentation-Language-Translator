@@ -6,28 +6,30 @@
 
 <PageTitle>DONDE ESTA LA BIBLIOTECA!!!</PageTitle>
 
-<button @onclick="TogglePopup">Open Popup</button>
+@* <button @onclick="ShowPopup">Popup</button> *@
 
 <div class="mainDiv">
 	<div class="inputDiv">
 		<div class="smallContainer">
 			<h2>Upload content!</h2>
-
+			<p>Paste your document contents in the box on the right to translate!</p>
 			<label for="docName">Document name:</label>
-			<input type="text" id="docName" name="docName" @bind-value="documentName">
+			<input type="text" id="docName" name="docName" class="textInput" @bind-value="newDocumentName">
 
 			<label for="inputLanguage"> Select input langauge:</label>
-			<select id="inputLanguage" name="inputLanguage">
-				<option value="1">One</option>
-				<option value="2">Two</option>
-				<option value="3">Three</option>
+			<select id="inputLanguage" name="inputLanguage" @bind="inputLanguage" @bind:event="onchange">
+				@foreach(var l in languages)
+				{
+					<option value=@l>@l</option>
+				}
 			</select>
 
 			<label for="outputLanguage"> Select output langauge:</label>
-			<select id="outputLanguage" name="outputLanguage">
-				<option value="1">One</option>
-				<option value="2">Two</option>
-				<option value="3">Three</option>
+			<select id="outputLanguage" name="outputLanguage" @bind="outputLanguage" @bind:event="onchange">
+				@foreach(var l in languages)
+				{
+					<option value=@l>@l</option>
+				}
 			</select>
 
 			<p></p>
@@ -37,18 +39,19 @@
 		<div class="smallContainer">
 			<h2>View a file!</h2>
 			<label> Select the file you want to view:</label>
-			<select name="userFile">
-				<option value="1">One</option>
-				<option value="2">Two</option>
-				<option value="3">Three</option>
+			<select name="userFile" @bind="documentName" @bind:event="onchange">
+				@foreach(var currDocName in documentNames)
+				{
+					<option value=@currDocName>@currDocName</option>
+				}
 			</select>
-			<button>View file</button>
+			<button @onclick="ViewFile">View file</button>
 		</div>
 	</div>
 
 	<div class="viewDiv">
 		<h4>File Content:</h4>
-		<textarea class="inputContent" @bind="fileContent" @bind:event="oninput"/>
+		<textarea class="inputContent" @bind="fileContent" @bind:event="oninput" />
 	</div>
 </div>
 
@@ -67,9 +70,9 @@
 @code {
 	bool showPopup = false;
 
-	void TogglePopup()
+	void ShowPopup()
 	{
-		showPopup = !showPopup;
+		showPopup = true;
 	}
 
 	void ClosePopup()
@@ -79,52 +82,89 @@
 
 
 
-	private string? fileContent { get; set; } = "qwerty";
-	private string? documentName;
-	private string messageInfo = "Provide valid input";
+	private string? fileContent { get; set; }
+	private string? documentName, newDocumentName;
+	private string messageInfo;
+	private List<string> languages;
+	private List<string> documentNames;
+	private string? inputLanguage, outputLanguage;
+	private int maxFileSizeBytes = 1024;
 
-
-	protected void OnInitialised()
+	protected override void OnInitialized()
 	{
 		messageInfo = "Provide valid input";
+		languages = getLanguages();
+		inputLanguage = languages.FirstOrDefault();
+		outputLanguage = languages.FirstOrDefault();
+
+		documentNames = getDocumentNames();
+		documentName = documentNames.FirstOrDefault();
+
+		base.OnInitialized();
 	}
 
-	private async Task HandleFileSelected(InputFileChangeEventArgs e)
+	// Functions to call the API:
+	private List<string> getLanguages()
 	{
-		try
-		{
-			var file = e.GetMultipleFiles().FirstOrDefault();
-			if(file != null)
-			{
-				var fileStream = file.OpenReadStream();
-				using var reader = new StreamReader(fileStream);
-				var contents = await reader.ReadToEndAsync();
+		var result = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four"};
+		return result;
+	}
 
-				// Update UI using InvokeAsync
-				await InvokeAsync(() =>
-				{
-					fileContent = contents;
-				});
-				Console.WriteLine("Filename: " + file.Name);
-				return;
-			}
-		}
-		catch(Exception exception)
-		{
-			Console.WriteLine("Exception info: " + exception.Message);
-		}
+	private List<string> getDocumentNames()
+	{
+		var result = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5"};
+		return result;
 	}
 
 	private void UploadDocument()
 	{
-		if(fileContent == "qwerty")
+		var mustUpload = true;
+		if(String.IsNullOrEmpty(newDocumentName))
 		{
-			Console.WriteLine("Musat first upload a doc!!!");
+			// Tell the user that their docname is invalid
+			messageInfo = "Please give the new document a name.";
+			showPopup = true;
+			mustUpload = false;
 			return;
 		}
-		else
+		if(String.IsNullOrEmpty(fileContent))
 		{
-			Console.WriteLine("Call API here tp upload the doc");
+			// Tell the user that they must enter file content
+			messageInfo = "Please enter file contents.";
+			showPopup = true;
+			mustUpload = false;
+			return;
 		}
+		if(fileContent.Length > maxFileSizeBytes)
+		{
+			// Tell the user that their file was too long
+			messageInfo = "File too big.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(inputLanguage == outputLanguage)
+		{
+			// Tell the user that theey must select 2 different languages
+			messageInfo = "Select different input and output languages.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(mustUpload)
+		{
+			// Upload the file:
+			var body = $"documentName:{newDocumentName},\ndocumentContents:{fileContent},\ninputLanguage:{inputLanguage},\noutputLanguage:{outputLanguage}";
+			// Send it here
+			messageInfo = body;
+			showPopup = true;
+		}
+	}
+
+	private void ViewFile()
+	{
+		messageInfo = $"viewing: {documentName} content";
+		showPopup = true;
+		fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	}
 }
