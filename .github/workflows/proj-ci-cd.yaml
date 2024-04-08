@@ -22,9 +22,14 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/terraform-cd.yaml
 
-  app-cd:
-    name: App CD
+  db-cd:
+    name: "Flyway Migration"
     needs: terraform-cd
     secrets: inherit
+    uses: ./.github/workflows/db-cd.yaml
+
+  app-cd:
+    name: App CD
+    needs: db-cd
+    secrets: inherit
     uses: ./.github/workflows/app-cd.yaml
-    
