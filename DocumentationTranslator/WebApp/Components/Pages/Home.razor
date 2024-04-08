@@ -5,26 +5,33 @@
 @attribute [StreamRendering]
 
 <PageTitle>DONDE ESTA LA BIBLIOTECA!!!</PageTitle>
+
+<button @onclick="TogglePopup">Open Popup</button>
+
 <div class="mainDiv">
 	<div class="inputDiv">
 		<div class="smallContainer">
-			<h2>Upload a file!</h2>
-			<InputFile OnChange="HandleFileSelected" />
-			<label> Select input langauge:</label>
-			<select name="inputLanguage">
+			<h2>Upload content!</h2>
+
+			<label for="docName">Document name:</label>
+			<input type="text" id="docName" name="docName" @bind-value="documentName">
+
+			<label for="inputLanguage"> Select input langauge:</label>
+			<select id="inputLanguage" name="inputLanguage">
 				<option value="1">One</option>
 				<option value="2">Two</option>
 				<option value="3">Three</option>
 			</select>
 
-			<label> Select output langauge:</label>
-			<select name="outputLanguage">
+			<label for="outputLanguage"> Select output langauge:</label>
+			<select id="outputLanguage" name="outputLanguage">
 				<option value="1">One</option>
 				<option value="2">Two</option>
 				<option value="3">Three</option>
 			</select>
+
 			<p></p>
-			<button>Translate</button>
+			<button @onclick="UploadDocument">Upload!</button>
 		</div>
 
 		<div class="smallContainer">
@@ -41,11 +48,47 @@
 
 	<div class="viewDiv">
 		<h4>File Content:</h4>
-		<pre>@fileContent</pre>
+		<textarea class="inputContent" @bind="fileContent" @bind:event="oninput"/>
 	</div>
 </div>
 
+@if(showPopup)
+{
+	<div class="popup-overlay" @onclick="ClosePopup">
+		<div class="popup">
+			<div class="popup-content">
+				<p>@this.messageInfo</p>
+			</div>
+		</div>
+	</div>
+}
+
+
 @code {
+	bool showPopup = false;
+
+	void TogglePopup()
+	{
+		showPopup = !showPopup;
+	}
+
+	void ClosePopup()
+	{
+		showPopup = false;
+	}
+
+
+
+	private string? fileContent { get; set; } = "qwerty";
+	private string? documentName;
+	private string messageInfo = "Provide valid input";
+
+
+	protected void OnInitialised()
+	{
+		messageInfo = "Provide valid input";
+	}
+
 	private async Task HandleFileSelected(InputFileChangeEventArgs e)
 	{
 		try
@@ -62,13 +105,26 @@
 				{
 					fileContent = contents;
 				});
-				Console.WriteLine("Exception info: " + file.Name);
+				Console.WriteLine("Filename: " + file.Name);
 				return;
 			}
-		} catch (Exception exception)
+		}
+		catch(Exception exception)
 		{
 			Console.WriteLine("Exception info: " + exception.Message);
 		}
+	}
 
+	private void UploadDocument()
+	{
+		if(fileContent == "qwerty")
+		{
+			Console.WriteLine("Musat first upload a doc!!!");
+			return;
+		}
+		else
+		{
+			Console.WriteLine("Call API here tp upload the doc");
+		}
 	}
 }

@@ -12,7 +12,6 @@ public partial class Home
 	private string code = "";
 	private static string accessToken = "";
 	private static string idToken = "";
-	private static string fileContent = "qwerty";
 
 	protected override async Task OnInitializedAsync()
 	{
