@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using frontend_cli.Commands;
+using Cli.Commands;
 using System.Text.Json;
 
-namespace frontend_cli
+namespace Cli
 {
     class Program
     {
@@ -105,7 +105,18 @@ namespace frontend_cli
                         Console.WriteLine("\u001b[31mYou must be logged in to use this command\u001b[0m");
                     }
                 }
-                else if (command == "download")
+				else if (command == "languages")
+				{
+					if (accessToken != null)
+					{
+						LanguagesCommand.Run();
+					}
+					else
+					{
+						Console.WriteLine("\u001b[31mYou must be logged in to use this command\u001b[0m");
+					}
+				}
+				else if (command == "download")
                 {
                     if (accessToken != null)
                     {

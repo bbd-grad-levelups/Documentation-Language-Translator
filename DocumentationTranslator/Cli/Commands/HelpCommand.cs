@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace frontend_cli.Commands
+namespace Cli.Commands
 {
     public class HelpCommand
     {
@@ -10,7 +10,8 @@ namespace frontend_cli.Commands
             new CommandInfo { Name = "help", Description = "Displays list of available commands" },
             new CommandInfo { Name = "login", Description = "Allows user to login with Google" },
             new CommandInfo { Name = "logout", Description = "Logout of the application" },
-            new CommandInfo { Name = "translate", Description = "Upload a file to be translated \nrun command as follows: \u001b[33mtranslate <filepath>\u001b[0m" },
+			new CommandInfo { Name = "languages", Description = "Lists all supported languages" },
+			new CommandInfo { Name = "translate", Description = "Upload a file to be translated \nrun command as follows: \u001b[33mtranslate <filepath>\u001b[0m" },
             new CommandInfo { Name = "history", Description = "Returns list of previously translated documents" },
             new CommandInfo { Name = "download", Description = "Downloads translated document to filepath specified by user \nrun command as follows: \u001b[33mdownload <filename> <filepath>\u001b[0m" },
             new CommandInfo { Name = "clear", Description = "Clears the console" },

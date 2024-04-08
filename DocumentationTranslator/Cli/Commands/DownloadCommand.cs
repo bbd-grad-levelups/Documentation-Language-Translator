@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace frontend_cli.Commands
+namespace Cli.Commands
 {
     internal class DownloadCommand
     {
