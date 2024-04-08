@@ -6,9 +6,8 @@ namespace Cli.Commands
     internal class LoginCommand
     {
         private static string scopes = "profile email";
-        private static string redirectUri = "urn:ietf:wg:oauth:2.0:oob";
 
-        public static async Task<(string idToken, string accessToken, string name, string email)> Run(string id, string secret)
+        public static async Task<(string idToken, string accessToken, string name, string email)> Run(string id, string secret, string redirectUri)
         {
             var urlBuilder = new UriBuilder("https://accounts.google.com/o/oauth2/v2/auth");
             var queryParameters = new Dictionary<string, string>()

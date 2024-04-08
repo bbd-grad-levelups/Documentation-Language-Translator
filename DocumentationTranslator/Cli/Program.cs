@@ -40,6 +40,7 @@ namespace Cli
                     string clientId = "";
                     string clientSecret = "";
                     string[] scopes = new string[] { "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile" };
+                    string redirectUri = "";
                     try
                     {
                         using (StreamReader reader = new StreamReader("../../../client_secrets.json"))
@@ -49,7 +50,8 @@ namespace Cli
                             JsonElement root = document.RootElement;
                             clientId = root.GetProperty("installed").GetProperty("client_id").GetString();
                             clientSecret = root.GetProperty("installed").GetProperty("client_secret").GetString();
-                        }
+							redirectUri = root.GetProperty("installed").GetProperty("redirect_uri").GetString();
+						}
                     }
                     catch (Exception ex)
                     {
@@ -57,7 +59,7 @@ namespace Cli
                         return;
                     }
 
-                    (idToken, accessToken, name, email) = await LoginCommand.Run(clientId, clientSecret);
+                    (idToken, accessToken, name, email) = await LoginCommand.Run(clientId, clientSecret, redirectUri);
                     Console.WriteLine($"You are logged in as: {name}");
                 }
                 else if (command == "logout")
