@@ -43,7 +43,7 @@ namespace Cli
                     string redirectUri = "";
                     try
                     {
-                        using (StreamReader reader = new StreamReader("../../../client_secrets.json"))
+                        using (StreamReader reader = new StreamReader("client_secrets.json"))
                         {
                             string json = reader.ReadToEnd();
                             JsonDocument document = JsonDocument.Parse(json);
