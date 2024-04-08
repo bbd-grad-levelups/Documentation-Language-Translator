@@ -1,9 +1,10 @@
 namespace DocTranslatorServer.Models;
 
-public record TextDocument
+public class TextDocument
 {
+  public int DocumentID { get; set; }
+  
   public int LanguageID { get; set; }
-  public virtual Language? Language { get; set; }
 
   public DateTime? GenTime { get; set; }
 

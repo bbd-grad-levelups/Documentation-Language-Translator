@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using DocTranslatorServer.Models;
-using System.Net.Http.Headers;
+using DocTranslatorServer.Data;
 
 namespace DocTranslatorServer.Controllers
 {
@@ -24,22 +25,60 @@ namespace DocTranslatorServer.Controllers
       _httpContextAccessor = httpContext;
     }
 
-    [HttpPut("/translatetest")]
-    public async Task<string> GetTranslation(string originalLanguage, string outputLanguage, string text)
-    {
-      var translatedString = await CallTranslatorAPI(originalLanguage, outputLanguage, text);
-      return translatedString; // Return the translated text
-    }
-
-    [HttpGet("/document")]
-    public async Task<ActionResult<IEnumerable<Document>>> GetUserDocuments()
+    // GET: api/User
+    [HttpGet("/user")]
+    public async Task<ActionResult<string>> GetUser()
     {
       // Access context's user id value
       var context = _httpContextAccessor.HttpContext;
 
       if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId).ToListAsync();
+        var thing = await _usrContext.User.FindAsync(userId);
+        if (thing != null)
+        { 
+          return Ok(thing.Username ?? "unknown");
+        }
+        else
+        {
+          return NotFound();
+        }
+        
+      }
+      else
+      {
+        return NotFound();
+      }
+    }
+
+
+    [HttpGet("/document")]
+    public async Task<ActionResult<IEnumerable<TextDocument>>> GetUserDocuments()
+    {
+      // Access context's user id value
+      var context = _httpContextAccessor.HttpContext;
+
+      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
+      {
+        var userDocList = await _docContext.Document.Where(e => e.UserID == userId).Select(document => ConvertDocToTextDoc(document)).ToListAsync();
+
+        return Ok(userDocList);
+      }
+      else
+      {
+        return NotFound();
+      }
+    }
+
+    [HttpGet("/document/names")]
+    public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
+    {
+      // Access context's user id value
+      var context = _httpContextAccessor.HttpContext;
+
+      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
+      {
+        var thing = await _docContext.Document.Where(e => e.UserID == userId).Select(document => ConvertDocToDocName(document)).ToListAsync();
 
         return Ok(thing);
       }
@@ -55,29 +94,30 @@ namespace DocTranslatorServer.Controllers
       // Get language
       var language = await _lanContext.Language.FindAsync(document.LanguageID);
 
-      var translatedString = await CallTranslatorAPI("", language.Abbreviation, document.DocumentContent);
+      string endpoint = "microsoft-translator-text.p.rapidapi.com";
+      string apiKey = _configuration.GetValue("APIKey", "") ?? "";
+
+      var translatedString = await Translator.CallTranslatorAPI("", language.Abbreviation, document.DocumentContent, apiKey, endpoint);
 
       var context = _httpContextAccessor.HttpContext;
 
       if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        var newDoc = new Document() {
+        var newPath = SaveToFile(userId.ToString(), document.DocumentTitle, translatedString);
+
+        var newDoc = new Document()
+        {
           LanguageID = language.LanguageID,
-          Path = translatedString,
-          UserID = userId
+          DocumentName = newPath,
+          UserID = userId,
+          GenTime = DateTime.Now,
         };
-                var docEntry =    _docContext.Document.Add(newDoc);
-              await _docContext.SaveChangesAsync();
+        var docEntry = _docContext.Document.Add(newDoc);
+        await _docContext.SaveChangesAsync();
 
-        var newTextDoc = new TextDocument() {
-          DocumentContent = translatedString,
-          DocumentTitle = translatedString,
-          GenTime = docEntry.Entity.GenTime,
-          LanguageID = docEntry.Entity.LanguageID,
-          Language = docEntry.Entity.Language
-        };
-            return Ok(newTextDoc);
+        var newTextDoc = ConvertDocToTextDoc(docEntry.Entity);
 
+        return Ok(newTextDoc);
       }
 
       return Ok("");
@@ -87,78 +127,87 @@ namespace DocTranslatorServer.Controllers
     public async Task<ActionResult<TextDocument>> GetSpecificDocument(int id)
     {
       var document = await _docContext.Document.FindAsync(id);
+      document.Language = await _lanContext.Language.FindAsync(document.LanguageID);
 
-      if (document == null)
+      if (document == null || document.Language == null)
       {
         return NotFound();
       }
       else
       {
+        var fileData = GetDocumentFromFile(document.DocumentName);
+        var documentName = Path.GetFileNameWithoutExtension(document.DocumentName);
+
         var actualDoc = new TextDocument()
         {
           LanguageID = document.Language.LanguageID,
-          Language = document.Language,
-          DocumentContent = document.Path,
-          DocumentTitle = document.Path,
+          DocumentContent = fileData,
+          DocumentTitle = documentName,
           GenTime = document.GenTime
         };
 
         return Ok(actualDoc);
-
       }
     }
 
     [HttpGet("/languages")]
-    public async Task<ActionResult<IEnumerable<Language>>> GetLanguage()
+    public async Task<ActionResult<IEnumerable<Languages>>> GetLanguage()
     {
       return await _lanContext.Language.ToListAsync();
     }
 
-    [HttpGet("/documents/names")]
-    public async Task<ActionResult<IEnumerable<string>>> GetDocumentTitles()
+    private static string SaveToFile(string username, string title, string content)
     {
-      // Access context's user id value
-      var context = _httpContextAccessor.HttpContext;
+      string filePath = Path.Combine("DocumentFiles", username, $"{title}.txt");
 
-      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
+      // Ensure that the directory exists
+      string directoryPath = Path.GetDirectoryName(filePath);
+      if (!Directory.Exists(directoryPath))
       {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId).Select(e => e.Path).ToListAsync();
-
-        return Ok(thing);
+        Directory.CreateDirectory(directoryPath);
       }
-      else
+
+      // Create or append to the file and write data to it
+      using (StreamWriter writer = System.IO.File.AppendText(filePath))
       {
-        return NotFound();
+        writer.WriteLine(content);
+      }
+
+      System.IO.File.WriteAllText(filePath, content);
+      return filePath;
+    }
+
+    private static string GetDocumentFromFile(string path)
+    {
+      try
+      {
+        // Read the contents of the file
+        string content = System.IO.File.ReadAllText(path);
+        return content;
+      }
+      catch (Exception ex)
+      {
+        // Handle any exceptions (e.g., file not found, permission issues, etc.)
+        Console.WriteLine($"An error occurred while reading the file: {ex.Message}");
+        return null; // Or throw an exception, or return a default value, based on your requirements
       }
     }
 
-    private async Task<string> CallTranslatorAPI(string originalLanguage, string outputLanguage, string text)
+    private static TextDocument ConvertDocToTextDoc(Document inputDoc)
     {
-      string endpoint = "microsoft-translator-text.p.rapidapi.com";
-      string apiKey = _configuration.GetValue("APIKey", "") ?? "";
-      var client = new HttpClient();
-      var request = new HttpRequestMessage
+      return new TextDocument()
       {
-        Method = HttpMethod.Post,
-        RequestUri = new Uri($"https://{endpoint}/translate?to%5B0%5D={outputLanguage}&api-version=3.0&profanityAction=NoAction&textType=plain"),
-        Headers =
-        {
-          { "X-RapidAPI-Key", apiKey },
-          { "X-RapidAPI-Host", endpoint },
-        },
-        Content = new StringContent($"[{{\"Text\": \"{text}\"    }}]")
-        {
-          Headers =
-          {
-          ContentType = new MediaTypeHeaderValue("application/json")
-          }
-        }
+        DocumentContent = GetDocumentFromFile(inputDoc.DocumentName),
+        DocumentTitle = Path.GetFileNameWithoutExtension(inputDoc.DocumentName),
+        GenTime = inputDoc.GenTime,
+        LanguageID = inputDoc.LanguageID,
+        DocumentID = inputDoc.DocumentID
       };
+    }
 
-      using var response = await client.SendAsync(request);
-      response.EnsureSuccessStatusCode();
-      var body = await response.Content.ReadAsStringAsync();
-      return body;
+    private static DocName ConvertDocToDocName(Document inputDoc)
+    {
+      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "");
     }
   }
 }

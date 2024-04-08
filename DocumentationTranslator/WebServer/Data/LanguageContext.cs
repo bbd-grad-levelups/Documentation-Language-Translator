@@ -7,5 +7,5 @@ public class LanguageContext : DbContext
   {
   }
 
-  public DbSet<DocTranslatorServer.Models.Language> Language { get; set; } = default!;
+  public DbSet<DocTranslatorServer.Models.Languages> Language { get; set; } = default!;
 }

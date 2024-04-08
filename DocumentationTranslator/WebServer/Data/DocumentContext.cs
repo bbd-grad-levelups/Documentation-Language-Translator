@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
+namespace DocTranslatorServer.Data;
+
 public class DocumentContext : DbContext
 {
   public DocumentContext(DbContextOptions<DocumentContext> options)
