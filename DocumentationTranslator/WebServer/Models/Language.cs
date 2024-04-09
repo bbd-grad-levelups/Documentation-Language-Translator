@@ -16,6 +16,4 @@ public class Languages
   [Required]
   [StringLength(5)]
   public string? Abbreviation { get; set; }
-
-  public virtual ICollection<Document>? Documents { get; set; }
 }

@@ -8,8 +8,8 @@ public class TextDocument
 
   public DateTime? GenTime { get; set; }
 
-  public string DocumentContent { get; set; } = string.Empty;
-
   public string DocumentTitle { get; set; } = string.Empty;
+
+  public string DocumentContent { get; set; } = string.Empty;
 
 }

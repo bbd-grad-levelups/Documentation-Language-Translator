@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DocTranslatorServer.Models;
 
-
 [Table("Documents")]
 public class Document
 {

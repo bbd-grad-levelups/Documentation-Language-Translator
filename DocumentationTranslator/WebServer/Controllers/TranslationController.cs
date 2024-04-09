@@ -6,51 +6,14 @@ using DocTranslatorServer.Data;
 
 namespace DocTranslatorServer.Controllers
 {
-  [Route("api/[controller]")]
+  [Route("/[controller]")]
   [ApiController]
-  public class TranslationController : ControllerBase
+  public class TranslationController(DocumentContext documentContext, UserContext userContext, LanguageContext languageContext, IHttpContextAccessor httpContext) : ControllerBase
   {
-    private readonly DocumentContext _docContext;
-    private readonly UserContext _usrContext;
-    private readonly LanguageContext _lanContext;
-    private readonly IConfiguration _configuration;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public TranslationController(DocumentContext documentContext, UserContext userContext, LanguageContext languageContext, IConfiguration config, IHttpContextAccessor httpContext)
-    {
-      _docContext = documentContext;
-      _usrContext = userContext;
-      _lanContext = languageContext;
-      _configuration = config;
-      _httpContextAccessor = httpContext;
-    }
-
-    // GET: api/User
-    [HttpGet("/user")]
-    public async Task<ActionResult<string>> GetUser()
-    {
-      // Access context's user id value
-      var context = _httpContextAccessor.HttpContext;
-
-      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
-      {
-        var thing = await _usrContext.User.FindAsync(userId);
-        if (thing != null)
-        { 
-          return Ok(thing.Username ?? "unknown");
-        }
-        else
-        {
-          return NotFound();
-        }
-        
-      }
-      else
-      {
-        return NotFound();
-      }
-    }
-
+    private readonly DocumentContext _docContext = documentContext;
+    private readonly UserContext _usrContext = userContext;
+    private readonly LanguageContext _lanContext = languageContext;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContext;
 
     [HttpGet("/document")]
     public async Task<ActionResult<IEnumerable<TextDocument>>> GetUserDocuments()
@@ -78,7 +41,8 @@ namespace DocTranslatorServer.Controllers
 
       if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId).Select(document => ConvertDocToDocName(document)).ToListAsync();
+        var thing = await _docContext.Document.Where(e => e.UserID == userId)
+        .Select(document => ConvertDocToDocName(document)).ToListAsync();
 
         return Ok(thing);
       }
@@ -95,7 +59,7 @@ namespace DocTranslatorServer.Controllers
       var language = await _lanContext.Language.FindAsync(document.LanguageID);
 
       string endpoint = "microsoft-translator-text.p.rapidapi.com";
-      string apiKey = _configuration.GetValue("APIKey", "") ?? "";
+      string apiKey = Environment.GetEnvironmentVariable("DocServer_TranslationAPIKey") ?? throw new KeyNotFoundException("Could not load environment variable: ApiKey");
 
       var translatedString = await Translator.CallTranslatorAPI("", language.Abbreviation, document.DocumentContent, apiKey, endpoint);
 
@@ -207,7 +171,7 @@ namespace DocTranslatorServer.Controllers
 
     private static DocName ConvertDocToDocName(Document inputDoc)
     {
-      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "");
+      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "", "");
     }
   }
 }

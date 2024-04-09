@@ -1,14 +1,10 @@
 namespace DocTranslatorServer.Models;
 
-public class DocName
+public class DocName(int docID, string docName, string language)
 {
-  public int DocumentID { get; set; }
+  public int DocumentID { get; set; } = docID;
 
-  public string DocumentName { get; set; }
+  public string DocumentName { get; set; } = docName;
 
-  public DocName(int docID, string docName) 
-  {
-    DocumentID = docID;
-    DocumentName = docName;
-  }
+  public string Language { get; set; } = language;
 }

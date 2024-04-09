@@ -1,25 +1,20 @@
+using DocTranslatorServer.Data;
 using DocTranslatorServer.Models;
 
 namespace DocTranslatorServer.Controllers;
-public class UserDetectionMiddleWare : IMiddleware
+public class UserDetectionMiddleWare(UserContext controller) : IMiddleware
 {
-  private readonly IHttpClientFactory _httpClientFactory;
-  private readonly UserContext _context;
-
-  public UserDetectionMiddleWare(IHttpClientFactory httpClientFactory, UserContext controller)
-  {
-    _httpClientFactory = httpClientFactory;
-    _context = controller;
-  }
+  private readonly UserContext _context = controller;
 
   public async Task InvokeAsync(HttpContext context, RequestDelegate next)
   {
-    
-    string userName = context.Items["UserName"] as string ?? "unknown";
 
-    if (!_context.User.Any(e => e.Username == userName)) 
+    string userName = context.Items["UID"] as string ?? "unknown";
+
+    if (!_context.User.Any(e => e.Username == userName))
     {
-      var newUser = new User() {
+      var newUser = new User()
+      {
         UserID = 0,
         Username = userName
       };
