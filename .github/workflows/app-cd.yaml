@@ -105,7 +105,9 @@ jobs:
   
       - name: Create Windows CLI Package
         working-directory: ${{ env.cli_directory }}
-        run: zip -r cli-windows-x64.zip win_build/* -x '*.git*'
+        run: |
+          cd win_build
+          zip -r ../cli-windows-x64.zip . -x '*.git*'
 
       - name: Build Linux CLI
         working-directory: ${{ env.cli_directory }}
@@ -151,6 +153,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.cli_directory }}/cli-windows-x64.tar.gz
+          asset_path: ${{ env.cli_directory }}/cli-linux-x64.tar.gz
           asset_name: cli-linux-x64.tar.gz
           asset_content_type: application/tar.gz
