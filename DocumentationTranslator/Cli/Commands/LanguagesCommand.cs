@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace Cli.Commands
 {
@@ -41,19 +35,18 @@ namespace Cli.Commands
 						}
 						else
 						{
-							Console.WriteLine("Invalid JSON format.");
+							Console.WriteLine("\u001b[31mInvalid JSON format\u001b[0m");
 						}
 					}
 				}
 				else
 				{
-					Console.WriteLine("Failed to fetch data from the API.");
-					Console.WriteLine(response.StatusCode);
+					Console.WriteLine($"\u001b[31mError: {response.StatusCode}\u001b[0m");
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error: {ex.Message}");
+				Console.WriteLine($"\u001b[31mError: {ex.Message}\u001b[0m");
 			}
 		}
 	}

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Cli.Commands
+﻿namespace Cli.Commands
 {
-    public class ExitCommand
+	public class ExitCommand
     {
         public static void Run()
         {

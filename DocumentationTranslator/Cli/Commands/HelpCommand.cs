@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Cli.Commands
+﻿namespace Cli.Commands
 {
-    public class HelpCommand
+	public class HelpCommand
     {
         public static List<CommandInfo> commands = new List<CommandInfo>()
         {
@@ -13,7 +10,7 @@ namespace Cli.Commands
 			new CommandInfo { Name = "languages", Description = "Lists all supported languages" },
 			new CommandInfo { Name = "translate", Description = "Upload a file to be translated \nrun command as follows: \u001b[33mtranslate <filepath>\u001b[0m" },
             new CommandInfo { Name = "documents", Description = "Returns list of previously translated documents" },
-            new CommandInfo { Name = "download", Description = "Downloads translated document to filepath specified by user \nrun command as follows: \u001b[33mdownload <filename> <filepath>\u001b[0m" },
+            new CommandInfo { Name = "download", Description = "Downloads translated document to directory specified by user \nrun command as follows: \u001b[33mdownload <document_id> <directory_path>\u001b[0m" },
             new CommandInfo { Name = "clear", Description = "Clears the console" },
             new CommandInfo { Name = "exit", Description = "Closes the application" },
         };

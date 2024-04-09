@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Cli.Commands
 {
-    public class DocumentsCommand
+	public class DocumentsCommand
     {
-
         public static async Task Run(string idToken)
         {
 			using var client = new HttpClient();
@@ -33,6 +30,7 @@ namespace Cli.Commands
 							{
 								JsonElement documentElement = element.GetProperty("documentName");
 								JsonElement languageElement = element.GetProperty("language");
+								JsonElement idElement = element.GetProperty("documentID");
 								string doc = documentElement.GetString();
 								string lang = languageElement.GetString();
 
@@ -41,26 +39,23 @@ namespace Cli.Commands
 									lang = "unspecified";
 								}
 
-								Console.WriteLine($"{doc} ({lang})");
+								Console.WriteLine($"Name: {doc} | Language: {lang} | ID: {idElement}");
 							}
 						}
 						else
 						{
-							Console.WriteLine("Invalid JSON format.");
+							Console.WriteLine("\u001b[31mInvalid JSON format\u001b[0m");
 						}
 					}
-
-
 				}
 				else
 				{
-					Console.WriteLine("Failed to fetch data from the API.");
-					Console.WriteLine(response.StatusCode);
+					Console.WriteLine($"\u001b[31mError: {response.StatusCode}\u001b[0m");
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error: {ex.Message}");
+				Console.WriteLine($"\u001b[31mError: {ex.Message}\u001b[0m");
 			}
 		}
     }

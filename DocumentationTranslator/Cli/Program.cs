@@ -23,11 +23,7 @@ namespace Cli
                 string[] inputs = input.Split(' ');
                 string command = inputs[0].ToLower();
 
-                if (command == "test")
-                {
-                    TestCommand.Run();
-                }
-                else if (command == "help")
+                if (command == "help")
                 {
                     HelpCommand.Run();
                 }
@@ -125,13 +121,13 @@ namespace Cli
                     {
                         if (inputs.Length < 3)
                         {
-                            Console.WriteLine("\u001b[31mPlease enter a valid file to download and filepath\u001b[0m");
+                            Console.WriteLine("\u001b[31mPlease enter a valid document id and directory path\u001b[0m");
                         }
                         else
                         {
                             string filename = inputs[1];
                             string filepath = inputs[2];
-                            DownloadCommand.Run(filename, filepath);
+                            await DownloadCommand.Run(idToken, filename, filepath);
                         }
                     }
                     else
@@ -145,7 +141,7 @@ namespace Cli
                 }
                 else
                 {
-                    Console.WriteLine("\u001b[31mInvalid command. Enter 'help' to view list of valid commands.\u001b[0m");
+                    Console.WriteLine("\u001b[31mInvalid command. Enter 'help' to view list of valid commands\u001b[0m");
                 }
             }
         }

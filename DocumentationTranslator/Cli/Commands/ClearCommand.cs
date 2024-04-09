@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Cli.Commands
+﻿namespace Cli.Commands
 {
-    public class ClearCommand
+	public class ClearCommand
     {
         public static void Run()
         {
