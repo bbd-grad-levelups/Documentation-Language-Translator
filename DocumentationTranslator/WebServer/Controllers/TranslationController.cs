@@ -15,24 +15,6 @@ namespace DocTranslatorServer.Controllers
     private readonly LanguageContext _lanContext = languageContext;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContext;
 
-    [HttpGet("/document")]
-    public async Task<ActionResult<IEnumerable<TextDocument>>> GetUserDocuments()
-    {
-      // Access context's user id value
-      var context = _httpContextAccessor.HttpContext;
-
-      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
-      {
-        var userDocList = await _docContext.Document.Where(e => e.UserID == userId).Select(document => ConvertDocToTextDoc(document)).ToListAsync();
-
-        return Ok(userDocList);
-      }
-      else
-      {
-        return NotFound();
-      }
-    }
-
     [HttpGet("/document/names")]
     public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
     {
@@ -67,21 +49,19 @@ namespace DocTranslatorServer.Controllers
 
       if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        var newPath = SaveToFile(userId.ToString(), document.DocumentTitle, translatedString);
+        await SaveToFile(userId, document.DocumentTitle, translatedString);
 
         var newDoc = new Document()
         {
           LanguageID = language.LanguageID,
-          DocumentName = newPath,
+          DocumentName = document.DocumentTitle,
           UserID = userId,
           GenTime = DateTime.Now,
         };
         var docEntry = _docContext.Document.Add(newDoc);
         await _docContext.SaveChangesAsync();
 
-        var newTextDoc = ConvertDocToTextDoc(docEntry.Entity);
-
-        return Ok(newTextDoc);
+        return Ok(ConvertDocToTextDoc(docEntry.Entity, userId));
       }
 
       return Ok("");
@@ -93,24 +73,28 @@ namespace DocTranslatorServer.Controllers
       var document = await _docContext.Document.FindAsync(id);
       document.Language = await _lanContext.Language.FindAsync(document.LanguageID);
 
-      if (document == null || document.Language == null)
+      var context = _httpContextAccessor.HttpContext;
+
+      if ((document != null || document.Language != null) &&
+          context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        return NotFound();
-      }
-      else
-      {
-        var fileData = GetDocumentFromFile(document.DocumentName);
-        var documentName = Path.GetFileNameWithoutExtension(document.DocumentName);
+
+        var fileData = await GetDocumentFromFile(userId, document.DocumentName);
 
         var actualDoc = new TextDocument()
         {
           LanguageID = document.Language.LanguageID,
           DocumentContent = fileData,
-          DocumentTitle = documentName,
+          DocumentTitle = document.DocumentName,
           GenTime = document.GenTime
         };
 
         return Ok(actualDoc);
+
+      }
+      else
+      {
+        return NotFound();
       }
     }
 
@@ -120,49 +104,47 @@ namespace DocTranslatorServer.Controllers
       return await _lanContext.Language.ToListAsync();
     }
 
-    private static string SaveToFile(string username, string title, string content)
+    private static async Task<bool> SaveToFile(int userID, string title, string content)
     {
-      string filePath = Path.Combine("DocumentFiles", username, $"{title}.txt");
-
-      // Ensure that the directory exists
-      string directoryPath = Path.GetDirectoryName(filePath);
-      if (!Directory.Exists(directoryPath))
-      {
-        Directory.CreateDirectory(directoryPath);
-      }
-
-      // Create or append to the file and write data to it
-      using (StreamWriter writer = System.IO.File.AppendText(filePath))
-      {
-        writer.WriteLine(content);
-      }
-
-      System.IO.File.WriteAllText(filePath, content);
-      return filePath;
-    }
-
-    private static string GetDocumentFromFile(string path)
-    {
+      string bucketName;
       try
       {
-        // Read the contents of the file
-        string content = System.IO.File.ReadAllText(path);
-        return content;
+        bucketName = Environment.GetEnvironmentVariable("DocServer_FileBucket") ?? throw new KeyNotFoundException();
       }
-      catch (Exception ex)
+      catch (KeyNotFoundException)
       {
-        // Handle any exceptions (e.g., file not found, permission issues, etc.)
-        Console.WriteLine($"An error occurred while reading the file: {ex.Message}");
-        return null; // Or throw an exception, or return a default value, based on your requirements
+        Console.WriteLine("Failed to load file bucket env variable");
+        return false;
       }
+      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+
+      return await BucketLoader.PostDocumentToS3Async(bucketName, filePath, content);
     }
 
-    private static TextDocument ConvertDocToTextDoc(Document inputDoc)
+    private static async Task<string> GetDocumentFromFile(int userID, string title)
+    {
+      string bucketName;
+      try
+      {
+        bucketName = Environment.GetEnvironmentVariable("DocServer_FileBucket") ?? throw new KeyNotFoundException();
+      }
+      catch (KeyNotFoundException)
+      {
+        Console.WriteLine("Failed to load file bucket env variable");
+        return "";
+      }
+
+      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+      return await BucketLoader.GetDocumentFromS3Async(bucketName, filePath);
+
+    }
+
+    private async static Task<TextDocument> ConvertDocToTextDoc(Document inputDoc, int userID)
     {
       return new TextDocument()
       {
-        DocumentContent = GetDocumentFromFile(inputDoc.DocumentName),
-        DocumentTitle = Path.GetFileNameWithoutExtension(inputDoc.DocumentName),
+        DocumentContent = await GetDocumentFromFile(userID, inputDoc.DocumentName),
+        DocumentTitle = inputDoc.DocumentName,
         GenTime = inputDoc.GenTime,
         LanguageID = inputDoc.LanguageID,
         DocumentID = inputDoc.DocumentID
