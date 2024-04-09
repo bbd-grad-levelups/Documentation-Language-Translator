@@ -15,25 +15,6 @@ namespace DocTranslatorServer.Controllers
     private readonly LanguageContext _lanContext = languageContext;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContext;
 
-    [HttpGet("/document/names")]
-    public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
-    {
-      // Access context's user id value
-      var context = _httpContextAccessor.HttpContext;
-
-      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
-      {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId)
-        .Select(document => ConvertDocToDocName(document)).ToListAsync();
-
-        return Ok(thing);
-      }
-      else
-      {
-        return NotFound();
-      }
-    }
-
     [HttpPost("/document")]
     public async Task<ActionResult<TextDocument>> TranslateDocument(TextDocument document)
     {
@@ -61,7 +42,7 @@ namespace DocTranslatorServer.Controllers
         var docEntry = _docContext.Document.Add(newDoc);
         await _docContext.SaveChangesAsync();
 
-        return Ok(ConvertDocToTextDoc(docEntry.Entity, userId));
+        return Ok(await ConvertDocToTextDoc(docEntry.Entity, userId));
       }
 
       return Ok("");
@@ -78,6 +59,10 @@ namespace DocTranslatorServer.Controllers
       if ((document != null || document.Language != null) &&
           context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
+        if (document.UserID != userId)
+        {
+          return NotFound();
+        }
 
         var fileData = await GetDocumentFromFile(userId, document.DocumentName);
 
@@ -91,6 +76,25 @@ namespace DocTranslatorServer.Controllers
 
         return Ok(actualDoc);
 
+      }
+      else
+      {
+        return NotFound();
+      }
+    }
+
+    [HttpGet("/document/names")]
+    public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
+    {
+      // Access context's user id value
+      var context = _httpContextAccessor.HttpContext;
+
+      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
+      {
+        var thing = await _docContext.Document.Where(e => e.UserID == userId)
+        .Select(document => ConvertDocToDocName(document)).ToListAsync();
+
+        return Ok(thing);
       }
       else
       {

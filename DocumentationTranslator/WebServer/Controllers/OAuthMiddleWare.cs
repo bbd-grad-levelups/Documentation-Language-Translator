@@ -12,6 +12,11 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
   {
   
     var JWTToken = context.Request.Headers.Authorization.ToString();
+    if (string.IsNullOrEmpty(JWTToken))
+    {
+      return;
+    }
+
     string[] parts = JWTToken.Split('.');
 
     string googlePublicKeysUrl = "https://www.googleapis.com/oauth2/v3/certs";
@@ -30,7 +35,6 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
 
   private static bool ValidateToken(string publicKeysJson, string token)
   {
-    return true;
     string cli_audience;
     string web_audience;
     try {
