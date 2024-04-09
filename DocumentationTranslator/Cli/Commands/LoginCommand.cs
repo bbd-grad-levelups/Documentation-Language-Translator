@@ -53,14 +53,11 @@ namespace Cli.Commands
                     string accessToken = accessTokenElement.GetString();
                     string idToken = idTokenElement.GetString();
 
-                    Console.WriteLine("ID token:");
-                    Console.WriteLine($"{idToken}\n\n");
-
                     string name, email;
 
                     (name, email) = await getUserInfo(accessToken);
 
-                    Console.WriteLine("\u001b[32mSuccessfully logged in\u001b[0m");
+                    Console.WriteLine($"\u001b[32mSuccessfully logged in as {name}\u001b[0m");
                     return (idToken, accessToken, name, email);
                 }
                 else

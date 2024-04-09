@@ -5,9 +5,9 @@ using System.Text.Json;
 
 namespace Cli
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             string idToken = null;
             string accessToken = null;
@@ -15,6 +15,7 @@ namespace Cli
             string name = null;
 
             Console.WriteLine("\u001b[36mWelcome to doc#umentation translator!\u001b[0m");
+            Console.WriteLine("Type 'help' to view commands\n");
 
             while (true)
             {
@@ -57,13 +58,12 @@ namespace Cli
                     }
 
                     (idToken, accessToken, name, email) = await LoginCommand.Run(clientId, clientSecret, redirectUri);
-                    Console.WriteLine($"You are logged in as: {name}");
                 }
                 else if (command == "logout")
                 {
                     if (accessToken !=  null)
                     {
-                        LogoutCommand.Run(accessToken);
+                        await LogoutCommand.Run(accessToken);
                         idToken = null;
                         accessToken = null;
                         email = null;
@@ -85,7 +85,7 @@ namespace Cli
                         else
                         {
                             string filepath = inputs[1];
-                            TranslateCommand.Run(filepath);
+                            TranslateCommand.Run(idToken, filepath, "dffd");
                         }
                     }
                     else

@@ -5,7 +5,7 @@ namespace Cli.Commands
 {
     internal class TranslateCommand
     {
-        public static void Run(string filepath)
+        public static void Run(string idToken, string language, string filepath)
         {
             if (File.Exists(filepath))
             {
