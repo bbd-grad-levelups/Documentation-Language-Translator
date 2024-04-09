@@ -12,7 +12,7 @@ namespace Cli.Commands
             new CommandInfo { Name = "logout", Description = "Logout of the application" },
 			new CommandInfo { Name = "languages", Description = "Lists all supported languages" },
 			new CommandInfo { Name = "translate", Description = "Upload a file to be translated \nrun command as follows: \u001b[33mtranslate <filepath>\u001b[0m" },
-            new CommandInfo { Name = "history", Description = "Returns list of previously translated documents" },
+            new CommandInfo { Name = "documents", Description = "Returns list of previously translated documents" },
             new CommandInfo { Name = "download", Description = "Downloads translated document to filepath specified by user \nrun command as follows: \u001b[33mdownload <filename> <filepath>\u001b[0m" },
             new CommandInfo { Name = "clear", Description = "Clears the console" },
             new CommandInfo { Name = "exit", Description = "Closes the application" },

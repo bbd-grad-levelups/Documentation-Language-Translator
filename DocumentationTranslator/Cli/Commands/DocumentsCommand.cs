@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace Cli.Commands
 {
-	public class LanguagesCommand
-	{
-		public static async Task Run(string idToken)
-		{
+    public class DocumentsCommand
+    {
+
+        public static async Task Run(string idToken)
+        {
 			using var client = new HttpClient();
 
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
@@ -20,7 +17,7 @@ namespace Cli.Commands
 
 			try
 			{
-				HttpResponseMessage response = await client.GetAsync("api/Languages");
+				HttpResponseMessage response = await client.GetAsync("api/document/names");
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -34,9 +31,17 @@ namespace Cli.Commands
 						{
 							foreach (JsonElement element in root.EnumerateArray())
 							{
+								JsonElement documentElement = element.GetProperty("documentName");
 								JsonElement languageElement = element.GetProperty("language");
-								string language = languageElement.GetString();
-								Console.WriteLine(language);
+								string doc = documentElement.GetString();
+								string lang = languageElement.GetString();
+
+								if (lang == "")
+								{
+									lang = "unspecified";
+								}
+
+								Console.WriteLine($"{doc} ({lang})");
 							}
 						}
 						else
@@ -44,6 +49,8 @@ namespace Cli.Commands
 							Console.WriteLine("Invalid JSON format.");
 						}
 					}
+
+
 				}
 				else
 				{
@@ -56,5 +63,5 @@ namespace Cli.Commands
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 		}
-	}
+    }
 }

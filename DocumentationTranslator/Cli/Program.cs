@@ -18,6 +18,7 @@ namespace Cli
 
             while (true)
             {
+                Console.Write(">> ");
                 string input = Console.ReadLine();
                 string[] inputs = input.Split(' ');
                 string command = inputs[0].ToLower();
@@ -96,11 +97,11 @@ namespace Cli
                         Console.WriteLine("\u001b[31mYou must be logged in to use this command\u001b[0m");
                     }
                 }
-                else if (command == "history")
+                else if (command == "documents")
                 {
                     if (accessToken != null)
                     {
-                        HistoryCommand.Run();
+                        await DocumentsCommand.Run(idToken);
                     }
                     else
                     {
@@ -111,7 +112,7 @@ namespace Cli
 				{
 					if (accessToken != null)
 					{
-						LanguagesCommand.Run();
+						await LanguagesCommand.Run(idToken);
 					}
 					else
 					{

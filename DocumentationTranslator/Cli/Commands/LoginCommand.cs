@@ -53,8 +53,8 @@ namespace Cli.Commands
                     string accessToken = accessTokenElement.GetString();
                     string idToken = idTokenElement.GetString();
 
-                    // Console.WriteLine("ID token:");
-                    // Console.WriteLine($"{idToken}\n\n");
+                    Console.WriteLine("ID token:");
+                    Console.WriteLine($"{idToken}\n\n");
 
                     string name, email;
 
