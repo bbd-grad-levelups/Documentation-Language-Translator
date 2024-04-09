@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using DocTranslatorServer.Models;
 
-public class LanguageContext : DbContext
+namespace DocTranslatorServer.Data;
+
+public class LanguageContext(DbContextOptions<LanguageContext> options) : DbContext(options)
 {
-  public LanguageContext(DbContextOptions<LanguageContext> options)
-    : base(options)
-  {
-  }
-
-  public DbSet<DocTranslatorServer.Models.Language> Language { get; set; } = default!;
+  public DbSet<Languages> Language { get; set; } = default!;
 }
