@@ -10,7 +10,7 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
 
   public async Task InvokeAsync(HttpContext context, RequestDelegate next)
   {
-  
+
     var JWTToken = context.Request.Headers.Authorization.ToString();
     if (string.IsNullOrEmpty(JWTToken))
     {
@@ -37,7 +37,8 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
   {
     string cli_audience;
     string web_audience;
-    try {
+    try
+    {
       cli_audience = Environment.GetEnvironmentVariable("DocServer_CLI_audience") ?? throw new KeyNotFoundException();
       web_audience = Environment.GetEnvironmentVariable("DocServer_WEB_audience") ?? throw new KeyNotFoundException();
     }
@@ -48,7 +49,7 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
     }
 
     // WEB
-    try 
+    try
     {
       var handler = new JwtSecurityTokenHandler();
       handler.ValidateToken(token, new TokenValidationParameters
@@ -62,10 +63,10 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
       }, out var validatedToken);
       return true;
     }
-    catch (Exception) {}
+    catch (Exception) { }
 
     // CLI
-    try 
+    try
     {
       var handler = new JwtSecurityTokenHandler();
       handler.ValidateToken(token, new TokenValidationParameters
@@ -79,7 +80,7 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
       }, out var validatedToken);
       return true;
     }
-    catch (Exception) {}
+    catch (Exception) { }
 
     return false;
   }
@@ -95,5 +96,4 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
     JsonElement root = jsonDocument.RootElement;
     return root.GetProperty("sub").ToString();
   }
-
 }
