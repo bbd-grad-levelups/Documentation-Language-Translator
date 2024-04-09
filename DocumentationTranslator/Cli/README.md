@@ -1,4 +1,4 @@
-# C# CLI Application README
+# CLI Application
 
 **Platform Compatibility:** This application is compatible with Windows and Linux machines.
 
