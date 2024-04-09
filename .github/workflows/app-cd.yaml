@@ -112,7 +112,7 @@ jobs:
   
       - name: Create Linux CLI Package
         working-directory: ${{ env.cli_directory }}
-        run: tar -czvf cli-linux-x64.tar.gz linux_build -x '*.git*'
+        run: tar --exclude='*.git*' -czvf cli-linux-x64.tar.gz linux_build
 
       - uses: cb80/delrel@latest
         with:
