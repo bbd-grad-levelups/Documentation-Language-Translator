@@ -4,7 +4,7 @@ namespace WebApp.Components.Pages;
 
 public partial class Home
 {
-	
+	// OAuth:
 	private static string scopes = "profile email";
 	private static string redirectUri = "https://localhost:7138/";
 	private static string clientId = "";
@@ -142,5 +142,110 @@ public partial class Home
 		urlBuilder.Query = string.Join("&", queryParameters.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
 
 		return urlBuilder.ToString();
+	}
+
+	// Web UI code:
+	public string? fileContent { get; set; }
+	public string? documentName, newDocumentName;
+	public string messageInfo;
+	public List<string> languages;
+	public List<string> documentNames;
+	public string? inputLanguage, outputLanguage;
+	public int maxFileSizeBytes = 1024;
+
+	public void CallOnInit()
+	{
+		this.OnInitialized();
+	}
+
+	protected override void OnInitialized()
+	{
+		messageInfo = "Provide valid input";
+		try
+		{
+			languages = getLanguages();
+			inputLanguage = languages.FirstOrDefault();
+			outputLanguage = languages.FirstOrDefault();
+
+			documentNames = getDocumentNames();
+			documentName = documentNames.FirstOrDefault();
+		}
+		catch(Exception ex)
+		{
+			languages = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
+			inputLanguage = languages.FirstOrDefault();
+			outputLanguage = languages.FirstOrDefault();
+
+			documentNames = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
+			documentName = documentNames.FirstOrDefault();
+		}
+
+		base.OnInitialized();
+	}
+
+	// Functions to call the API:
+	private List<string> getLanguages()
+	{
+		var result = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
+		return result;
+	}
+
+	private List<string> getDocumentNames()
+	{
+		var result = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
+		return result;
+	}
+
+	private void UploadDocument()
+	{
+		var mustUpload = true;
+		if(String.IsNullOrEmpty(newDocumentName))
+		{
+			// Tell the user that their docname is invalid
+			messageInfo = "Please give the new document a name.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(String.IsNullOrEmpty(fileContent))
+		{
+			// Tell the user that they must enter file content
+			messageInfo = "Please enter file contents.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(fileContent.Length > maxFileSizeBytes)
+		{
+			// Tell the user that their file was too long
+			messageInfo = "File too big.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(inputLanguage == outputLanguage)
+		{
+			// Tell the user that theey must select 2 different languages
+			messageInfo = "Select different input and output languages.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
+		if(mustUpload)
+		{
+			// Upload the file:
+			var body = $"documentName:{newDocumentName},\ndocumentContents:{fileContent},\ninputLanguage:{inputLanguage},\noutputLanguage:{outputLanguage}";
+			// Send it here
+			messageInfo = body;
+			showPopup = true;
+		}
+	}
+
+	private void ViewFile()
+	{
+		messageInfo = $"viewing: {documentName} content";
+		showPopup = true;
+		// Get docContent
+		fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	}
 }
