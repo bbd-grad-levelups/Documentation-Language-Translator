@@ -22,9 +22,11 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
     string googlePublicKeysUrl = "https://www.googleapis.com/oauth2/v3/certs";
     string publicKeysJson = await _httpClientFactory.CreateClient().GetStringAsync(googlePublicKeysUrl);
 
-    bool validation = ValidateToken(publicKeysJson, JWTToken);
+    bool validation = ValidateToken(publicKeysJson, JWTToken, out string errorMessages);
     if (!validation)
     {
+      context.Response.StatusCode = 401;
+      await context.Response.WriteAsync("Invalid JWT token. : \n" + errorMessages);
       return;
     }
 
@@ -33,8 +35,10 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
     await next(context);
   }
 
-  private static bool ValidateToken(string publicKeysJson, string token)
+  private static bool ValidateToken(string publicKeysJson, string token, out string errorMessages)
   {
+    Console.WriteLine("Attempting validation");
+    errorMessages = "";
     string cli_audience;
     string web_audience;
     try
@@ -63,7 +67,11 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
       }, out var validatedToken);
       return true;
     }
-    catch (Exception) { }
+    catch (Exception e) 
+    {
+       Console.WriteLine(e); 
+       errorMessages += e.Message + "\n";
+    }
 
     // CLI
     try
@@ -80,7 +88,11 @@ public class OAuthMiddleWare(IHttpClientFactory httpClientFactory) : IMiddleware
       }, out var validatedToken);
       return true;
     }
-    catch (Exception) { }
+    catch (Exception e) 
+    { 
+      Console.WriteLine(e);
+      errorMessages += e.Message;
+    }
 
     return false;
   }
