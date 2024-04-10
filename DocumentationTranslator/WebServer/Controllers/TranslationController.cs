@@ -8,42 +8,26 @@ namespace DocTranslatorServer.Controllers
 {
   [Route("/[controller]")]
   [ApiController]
-  public class TranslationController(DocumentContext documentContext, UserContext userContext, LanguageContext languageContext, IHttpContextAccessor httpContext) : ControllerBase
+  public class TranslationController(DocumentContext documentContext, LanguageContext languageContext, IHttpContextAccessor httpContext) : ControllerBase
   {
     private readonly DocumentContext _docContext = documentContext;
-    private readonly UserContext _usrContext = userContext;
     private readonly LanguageContext _lanContext = languageContext;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContext;
-
-    [HttpGet("/document/names")]
-    public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
-    {
-      // Access context's user id value
-      var context = _httpContextAccessor.HttpContext;
-
-      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
-      {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId)
-        .Select(document => ConvertDocToDocName(document)).ToListAsync();
-
-        return Ok(thing);
-      }
-      else
-      {
-        return NotFound();
-      }
-    }
 
     [HttpPost("/document")]
     public async Task<ActionResult<TextDocument>> TranslateDocument(TextDocument document)
     {
       // Get language
       var language = await _lanContext.Language.FindAsync(document.LanguageID);
+      if (language == null)
+        return NotFound("Requested Language Not Found");
+
+      var languageAbbreviation = language.Abbreviation ?? "en";
 
       string endpoint = "microsoft-translator-text.p.rapidapi.com";
       string apiKey = Environment.GetEnvironmentVariable("DocServer_TranslationAPIKey") ?? throw new KeyNotFoundException("Could not load environment variable: ApiKey");
 
-      var translatedString = await Translator.CallTranslatorAPI("", language.Abbreviation, document.DocumentContent, apiKey, endpoint);
+      var translatedString = await Translator.CallTranslatorAPI("", languageAbbreviation, document.DocumentContent, apiKey, endpoint);
 
       var context = _httpContextAccessor.HttpContext;
 
@@ -61,7 +45,7 @@ namespace DocTranslatorServer.Controllers
         var docEntry = _docContext.Document.Add(newDoc);
         await _docContext.SaveChangesAsync();
 
-        return Ok(ConvertDocToTextDoc(docEntry.Entity, userId));
+        return Ok(await ConvertDocToTextDoc(docEntry.Entity, userId));
       }
 
       return Ok("");
@@ -71,26 +55,50 @@ namespace DocTranslatorServer.Controllers
     public async Task<ActionResult<TextDocument>> GetSpecificDocument(int id)
     {
       var document = await _docContext.Document.FindAsync(id);
+      if (document == null)
+      {
+        return NotFound();
+      }
+
+      var userIdObj = _httpContextAccessor.HttpContext?.Items["userID"];
+      if (userIdObj is not int userId)
+        return BadRequest();
+
+      if (document.UserID != userId)
+        return NotFound();
+
       document.Language = await _lanContext.Language.FindAsync(document.LanguageID);
 
+      if (document.Language == null)
+        return BadRequest();
+
+      string documentTitle = document.DocumentName ?? "Unknown";
+
+      var fileData = await GetDocumentFromFile(userId, documentTitle);
+
+      var actualDoc = new TextDocument()
+      {
+        LanguageID = document.Language.LanguageID,
+        DocumentContent = fileData,
+        DocumentTitle = documentTitle,
+        GenTime = document.GenTime
+      };
+
+      return Ok(actualDoc);
+    }
+
+    [HttpGet("/document/names")]
+    public async Task<ActionResult<IEnumerable<DocName>>> GetUserDocumentNames()
+    {
+      // Access context's user id value
       var context = _httpContextAccessor.HttpContext;
 
-      if ((document != null || document.Language != null) &&
-          context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
+      if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
+        var thing = await _docContext.Document.Where(e => e.UserID == userId)
+        .Select(document => ConvertDocToDocName(document)).ToListAsync();
 
-        var fileData = await GetDocumentFromFile(userId, document.DocumentName);
-
-        var actualDoc = new TextDocument()
-        {
-          LanguageID = document.Language.LanguageID,
-          DocumentContent = fileData,
-          DocumentTitle = document.DocumentName,
-          GenTime = document.GenTime
-        };
-
-        return Ok(actualDoc);
-
+        return Ok(thing);
       }
       else
       {
@@ -116,6 +124,7 @@ namespace DocTranslatorServer.Controllers
         Console.WriteLine("Failed to load file bucket env variable");
         return false;
       }
+
       string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
 
       return await BucketLoader.PostDocumentToS3Async(bucketName, filePath, content);
@@ -141,19 +150,22 @@ namespace DocTranslatorServer.Controllers
 
     private async static Task<TextDocument> ConvertDocToTextDoc(Document inputDoc, int userID)
     {
+      var documentName = inputDoc.DocumentName ?? "Unknown";
       return new TextDocument()
       {
-        DocumentContent = await GetDocumentFromFile(userID, inputDoc.DocumentName),
-        DocumentTitle = inputDoc.DocumentName,
+        DocumentContent = await GetDocumentFromFile(userID, documentName),
+        DocumentTitle = documentName,
         GenTime = inputDoc.GenTime,
         LanguageID = inputDoc.LanguageID,
         DocumentID = inputDoc.DocumentID
       };
     }
 
-    private static DocName ConvertDocToDocName(Document inputDoc)
+    private async Task<DocName> ConvertDocToDocName(Document inputDoc)
     {
-      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "", "");
+      var language = await _lanContext.Language.FindAsync(inputDoc.LanguageID);
+      
+      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "", language?.Language ?? "");
     }
   }
 }
