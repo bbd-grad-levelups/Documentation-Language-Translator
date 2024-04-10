@@ -78,6 +78,7 @@ namespace DocTranslatorServer.Controllers
 
       var actualDoc = new TextDocument()
       {
+        DocumentID = document.DocumentID,
         LanguageID = document.Language.LanguageID,
         DocumentContent = fileData,
         DocumentTitle = documentTitle,
@@ -95,9 +96,18 @@ namespace DocTranslatorServer.Controllers
 
       if (context != null && context.Items.TryGetValue("userID", out var userIdObj) && userIdObj is int userId)
       {
-        var thing = await _docContext.Document.Where(e => e.UserID == userId)
-        .Select(document => ConvertDocToDocName(document)).ToListAsync();
+        var thing = await _docContext.Document.Where(e => e.UserID == userId).ToListAsync();
 
+        if (thing.Count > 0)
+        {
+          List<DocName> docList = [];
+          foreach (var item in thing)
+          {
+            var newTextDoc = await ConvertDocToDocName(item);
+            docList.Add(newTextDoc);
+          }
+          return Ok(docList);
+        }
         return Ok(thing);
       }
       else
