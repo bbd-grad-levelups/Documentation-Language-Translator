@@ -58,6 +58,8 @@ namespace Cli
                     }
 
                     (idToken, accessToken, name, email) = await LoginCommand.Run(clientId, clientSecret, redirectUri);
+
+                    await LanguagesCommand.InitLanguages(idToken);
                 }
                 else if (command == "logout")
                 {
@@ -78,14 +80,22 @@ namespace Cli
                 {
                     if (accessToken != null)
                     {
-                        if (inputs.Length < 2)
+                        if (inputs.Length < 3)
                         {
-                            Console.WriteLine("\u001b[31mPlease enter a valid filepath\u001b[0m");
+                            Console.WriteLine("\u001b[31mPlease enter a valid language and filepath\u001b[0m");
                         }
                         else
                         {
-                            string filepath = inputs[1];
-                            TranslateCommand.Run(idToken, filepath, "dffd");
+                            string language = inputs[1];
+
+							string filepath = string.Join(" ", inputs, 2, inputs.Length - 2);
+
+							if (filepath.StartsWith("\"") && filepath.EndsWith("\""))
+							{
+								filepath = filepath.Substring(1, filepath.Length - 2);
+							}
+
+							await TranslateCommand.Run(idToken, language, filepath);
                         }
                     }
                     else
@@ -108,7 +118,7 @@ namespace Cli
 				{
 					if (accessToken != null)
 					{
-						await LanguagesCommand.Run(idToken);
+						LanguagesCommand.Run();
 					}
 					else
 					{

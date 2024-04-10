@@ -5,11 +5,13 @@ namespace Cli.Commands
 {
 	public class LanguagesCommand
 	{
-		public static async Task Run(string idToken)
+		public static List<(string language, int id)> LanguageList { get; } = new List<(string language, int id)>();
+
+		public static async Task InitLanguages(string idToken)
 		{
 			using var client = new HttpClient();
 
-			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
 			client.BaseAddress = new Uri("http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/");
 
 			try
@@ -30,7 +32,10 @@ namespace Cli.Commands
 							{
 								JsonElement languageElement = element.GetProperty("language");
 								string language = languageElement.GetString();
-								Console.WriteLine(language);
+								JsonElement idElement = element.GetProperty("languageID");
+								int id = idElement.GetInt32();
+								
+								LanguageList.Add((language, id));
 							}
 						}
 						else
@@ -47,6 +52,21 @@ namespace Cli.Commands
 			catch (Exception ex)
 			{
 				Console.WriteLine($"\u001b[31mError: {ex.Message}\u001b[0m");
+			}
+		}
+
+		public static void Run()
+		{
+			if (LanguageList.Count == 0)
+			{
+				Console.WriteLine("Unable to retrieve supported languages");
+			}
+			else
+			{
+				foreach (var languageTuple in LanguageList)
+				{
+					Console.WriteLine(languageTuple.language);
+				}
 			}
 		}
 	}

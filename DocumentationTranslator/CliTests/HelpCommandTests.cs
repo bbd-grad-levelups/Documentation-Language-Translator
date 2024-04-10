@@ -42,7 +42,7 @@ namespace Cli.Tests
 		[InlineData("login", "Allows user to login with Google")]
 		[InlineData("logout", "Logout of the application")]
 		[InlineData("languages", "Lists all supported languages")]
-		[InlineData("translate", "Upload a file to be translated \nrun command as follows: \u001b[33mtranslate <filepath>\u001b[0m")]
+		[InlineData("translate", "Upload a file (.txt/.md) to be translated \nrun command as follows: \u001b[33mtranslate <language> <filepath>\u001b[0m")]
 		[InlineData("documents", "Returns list of previously translated documents")]
 		[InlineData("download", "Downloads translated document to directory specified by user \nrun command as follows: \u001b[33mdownload <document_id> <directory_path>\u001b[0m")]
 		[InlineData("clear", "Clears the console")]

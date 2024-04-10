@@ -9,7 +9,7 @@ namespace Cli.Commands
         {
 			using var client = new HttpClient();
 
-			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
 			client.BaseAddress = new Uri("http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/");
 
 			try

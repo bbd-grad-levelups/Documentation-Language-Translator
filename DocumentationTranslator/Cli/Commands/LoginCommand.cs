@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace Cli.Commands
 {
@@ -20,8 +21,9 @@ namespace Cli.Commands
             };
             urlBuilder.Query = string.Join("&", queryParameters.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             
-            Console.WriteLine("\u001b[33mOpen the following URL in your browser:\u001b[0m");
+            Console.WriteLine("\u001b[33mOpen the following URL in your browser if not opened automatically:\u001b[0m");
             Console.WriteLine(urlBuilder.ToString());
+            Process.Start(new ProcessStartInfo(urlBuilder.ToString()) { UseShellExecute = true });
             Console.WriteLine("\u001b[33mEnter the authorization code below:\u001b[0m");
             string authorizationCode = Console.ReadLine().Trim();
 
