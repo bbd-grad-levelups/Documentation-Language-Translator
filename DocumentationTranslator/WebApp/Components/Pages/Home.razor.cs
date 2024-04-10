@@ -6,7 +6,7 @@ public partial class Home
 {
 	// OAuth:
 	private static string scopes = "profile email";
-	private static string redirectUri = "https://localhost:7138/";
+	private static string redirectUri = "";
 	private static string clientId = "";
 	private static string clientSecret = "";
 	private string code = "";
@@ -76,6 +76,7 @@ public partial class Home
 				JsonElement root = document.RootElement;
 				clientId = root.GetProperty("web").GetProperty("client_id").GetString();
 				clientSecret = root.GetProperty("web").GetProperty("client_secret").GetString();
+				redirectUri = root.GetProperty("web").GetProperty("redirect_uri").GetString();
 			}
 			Console.WriteLine("Successfully read in Json");
 		}
