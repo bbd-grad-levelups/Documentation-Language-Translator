@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using DocTranslatorServer.Models;
 using DocTranslatorServer.Data;
+using System.Text.Json;
 
 namespace DocTranslatorServer.Controllers
 {
@@ -17,6 +18,8 @@ namespace DocTranslatorServer.Controllers
     [HttpPost("/document")]
     public async Task<ActionResult<TextDocument>> TranslateDocument(TextDocument document)
     {
+      document.DocumentContent = document.DocumentContent.Replace("\n","\\n");
+      
       // Get language
       var language = await _lanContext.Language.FindAsync(document.LanguageID);
       if (language == null)
@@ -45,7 +48,16 @@ namespace DocTranslatorServer.Controllers
         var docEntry = _docContext.Document.Add(newDoc);
         await _docContext.SaveChangesAsync();
 
-        return Ok(await ConvertDocToTextDoc(docEntry.Entity, userId));
+        var newTextDoc =  new TextDocument()
+        {
+          DocumentContent = translatedString,
+          DocumentTitle = document.DocumentTitle,
+          GenTime = docEntry.Entity.GenTime,
+          LanguageID = newDoc.LanguageID,
+          DocumentID = newDoc.DocumentID
+        };
+
+        return Ok(newTextDoc);
       }
 
       return Ok("");
@@ -135,7 +147,7 @@ namespace DocTranslatorServer.Controllers
         return false;
       }
 
-      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+      string filePath = $"DocumentFiles/{userID}/{title}";
 
       return await BucketLoader.PostDocumentToS3Async(bucketName, filePath, content);
     }
@@ -153,29 +165,16 @@ namespace DocTranslatorServer.Controllers
         return "";
       }
 
-      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+      string filePath = $"DocumentFiles/{userID}/{title}";
       return await BucketLoader.GetDocumentFromS3Async(bucketName, filePath);
 
-    }
-
-    private async static Task<TextDocument> ConvertDocToTextDoc(Document inputDoc, int userID)
-    {
-      var documentName = inputDoc.DocumentName ?? "Unknown";
-      return new TextDocument()
-      {
-        DocumentContent = await GetDocumentFromFile(userID, documentName),
-        DocumentTitle = documentName,
-        GenTime = inputDoc.GenTime,
-        LanguageID = inputDoc.LanguageID,
-        DocumentID = inputDoc.DocumentID
-      };
     }
 
     private async Task<DocName> ConvertDocToDocName(Document inputDoc)
     {
       var language = await _lanContext.Language.FindAsync(inputDoc.LanguageID);
       
-      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "", language?.Language ?? "");
+      return new DocName(inputDoc.DocumentID, inputDoc.DocumentName, language?.Language ?? "");
     }
   }
 }
