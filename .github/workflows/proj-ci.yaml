@@ -21,3 +21,8 @@ jobs:
     name: "Flyway Migration Testing"
     secrets: inherit
     uses: ./.github/workflows/db-ci.yaml
+
+  app-ci:
+    name: "App CI"
+    secrets: inherit
+    uses: ./.github/workflows/app-ci.yaml

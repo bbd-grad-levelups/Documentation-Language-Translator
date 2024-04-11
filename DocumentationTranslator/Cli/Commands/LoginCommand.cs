@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Text.Json;
+using System.Diagnostics;
 
-namespace frontend_cli.Commands
+namespace Cli.Commands
 {
     internal class LoginCommand
     {
         private static string scopes = "profile email";
-        private static string redirectUri = "urn:ietf:wg:oauth:2.0:oob";
 
-        public static async Task<(string idToken, string accessToken, string name, string email)> Run(string id, string secret)
+        public static async Task<(string idToken, string accessToken, string name, string email)> Run(string id, string secret, string redirectUri)
         {
             var urlBuilder = new UriBuilder("https://accounts.google.com/o/oauth2/v2/auth");
             var queryParameters = new Dictionary<string, string>()
@@ -21,8 +21,9 @@ namespace frontend_cli.Commands
             };
             urlBuilder.Query = string.Join("&", queryParameters.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             
-            Console.WriteLine("\u001b[33mOpen the following URL in your browser:\u001b[0m");
+            Console.WriteLine("\u001b[33mOpen the following URL in your browser if not opened automatically:\u001b[0m");
             Console.WriteLine(urlBuilder.ToString());
+            Process.Start(new ProcessStartInfo(urlBuilder.ToString()) { UseShellExecute = true });
             Console.WriteLine("\u001b[33mEnter the authorization code below:\u001b[0m");
             string authorizationCode = Console.ReadLine().Trim();
 
@@ -54,14 +55,11 @@ namespace frontend_cli.Commands
                     string accessToken = accessTokenElement.GetString();
                     string idToken = idTokenElement.GetString();
 
-                    // Console.WriteLine("ID token:");
-                    // Console.WriteLine($"{idToken}\n\n");
-
                     string name, email;
 
                     (name, email) = await getUserInfo(accessToken);
 
-                    Console.WriteLine("\u001b[32mSuccessfully logged in\u001b[0m");
+                    Console.WriteLine($"\u001b[32mSuccessfully logged in as {name}\u001b[0m");
                     return (idToken, accessToken, name, email);
                 }
                 else
