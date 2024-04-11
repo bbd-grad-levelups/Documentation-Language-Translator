@@ -35,7 +35,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Setup for Packaging
-        working-directory: ${{ env.web_directory }}
+        working-directory: ${{ env.web_directory }}/Components/Pages/
         run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
 
       - name: Build Web
@@ -105,19 +105,33 @@ jobs:
 
       - name: Build Windows CLI
         working-directory: ${{ env.cli_directory }}
-        run: dotnet publish -c Release -r win-x64 --self-contained true -o doc_translator_cli_windows
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -o cli_windows
   
       - name: Create Windows CLI Package
         working-directory: ${{ env.cli_directory }}
-        run: zip -r cli-windows-x64.zip ./doc_translator_cli_windows/* -x '*.git*'
+        run: |
+          cd cli_windows
+          zip -r ../cli-windows-x64.zip . -x '*.git*'
 
       - name: Build Linux CLI
         working-directory: ${{ env.cli_directory }}
-        run: dotnet publish -c Release -r linux-x64 --self-contained true -o doc_translator_cli_linux
+        run: dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true --self-contained true -o cli_linux
   
       - name: Create Linux CLI Package
         working-directory: ${{ env.cli_directory }}
-        run: tar --exclude='*.git*' -czvf cli-linux-x64.tar.gz doc_translator_cli_linux
+        run: |
+          cd cli_linux
+          tar --exclude='*.git*' -czvf ../cli-linux-x64.tar.gz .
+
+      - name: Build MacOS CLI
+        working-directory: ${{ env.cli_directory }}
+        run: dotnet publish -c Release -r osx-x64 -p:PublishSingleFile=true --self-contained true -o cli_macos
+  
+      - name: Create MacOS CLI Package
+        working-directory: ${{ env.cli_directory }}
+        run:  |
+          cd cli_macos
+          tar --exclude='*.git*' -czvf ../cli-macos-x64.tar.gz .
 
       - uses: cb80/delrel@latest
         with:
@@ -157,4 +171,15 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ env.cli_directory }}/cli-linux-x64.tar.gz
           asset_name: cli-linux-x64.tar.gz
+          asset_content_type: application/tar.gz
+
+      - name: Upload Release Asset (MacOS)
+        id: upload-release-asset-macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.cli_directory }}/cli-macos-x64.tar.gz
+          asset_name: cli-macos-x64.tar.gz
           asset_content_type: application/tar.gz

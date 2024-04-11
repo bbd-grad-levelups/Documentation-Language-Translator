@@ -52,9 +52,15 @@ namespace Cli.Commands
                 var request = new HttpRequestMessage(HttpMethod.Post, "http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/api/document");
                 request.Headers.Add("Authorization", idToken);
 
-				var content = new StringContent($"{{\"languageID\":{languageId},\"documentTitle\":\"{fileTitle}\",\"documentContent\":\"{fileContent}\"}}", null, "application/json");
+				// var content = new StringContent($"{{\"languageID\":{languageId},\"documentTitle\":\"{fileTitle}\",\"documentContent\":\"{fileContent}\"}}", null, "application/json");
 
-                request.Content = content;
+                var content = new {
+                    languageID = languageId,
+                    documentTitle = fileTitle,
+                    documentContent = fileContent
+                };
+
+                request.Content = new StringContent(JsonSerializer.Serialize(content), null, "application/json");
 
                 var response = await client.SendAsync(request);
 
