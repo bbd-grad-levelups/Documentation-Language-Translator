@@ -183,6 +183,11 @@ public partial class Home
 		await OnInitializedAsync();
 	}
 
+	public void OnInit()
+	{
+		OnInitialized();
+	}
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
