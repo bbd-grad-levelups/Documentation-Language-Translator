@@ -12,8 +12,8 @@ public partial class Home
 	private static string clientId = "";
 	private static string clientSecret = "";
 	private string code = "";
-	private static string accessToken = "";
-	private static string idToken = "";
+	private string accessToken = "";
+	private string idToken = "";
 
 	protected override async Task OnInitializedAsync()
 	{
