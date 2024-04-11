@@ -147,7 +147,7 @@ namespace DocTranslatorServer.Controllers
         return false;
       }
 
-      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+      string filePath = $"DocumentFiles/{userID}/{title}";
 
       return await BucketLoader.PostDocumentToS3Async(bucketName, filePath, content);
     }
@@ -165,29 +165,16 @@ namespace DocTranslatorServer.Controllers
         return "";
       }
 
-      string filePath = Path.Combine("DocumentFiles", userID.ToString(), $"{title}.txt");
+      string filePath = $"DocumentFiles/{userID}/{title}";
       return await BucketLoader.GetDocumentFromS3Async(bucketName, filePath);
 
-    }
-
-    private async static Task<TextDocument> ConvertDocToTextDoc(Document inputDoc, int userID)
-    {
-      var documentName = inputDoc.DocumentName ?? "Unknown";
-      return new TextDocument()
-      {
-        DocumentContent = await GetDocumentFromFile(userID, documentName),
-        DocumentTitle = documentName,
-        GenTime = inputDoc.GenTime,
-        LanguageID = inputDoc.LanguageID,
-        DocumentID = inputDoc.DocumentID
-      };
     }
 
     private async Task<DocName> ConvertDocToDocName(Document inputDoc)
     {
       var language = await _lanContext.Language.FindAsync(inputDoc.LanguageID);
       
-      return new DocName(inputDoc.DocumentID, Path.GetFileNameWithoutExtension(inputDoc.DocumentName) ?? "", language?.Language ?? "");
+      return new DocName(inputDoc.DocumentID, inputDoc.DocumentName, language?.Language ?? "");
     }
   }
 }
