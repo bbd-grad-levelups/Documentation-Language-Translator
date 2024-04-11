@@ -1,4 +1,4 @@
-﻿namespace frontend_cli.Commands
+﻿namespace Cli.Commands
 {
     internal class LogoutCommand
     {

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace frontend_cli.Commands
+﻿namespace Cli.Commands
 {
-    public class ClearCommand
+	public class ClearCommand
     {
         public static void Run()
         {

@@ -1,0 +1,104 @@
+name: Application CI
+
+on:
+  workflow_call:
+
+permissions:
+  checks: write
+  contents: read
+  id-token: write
+
+jobs:
+  api-ci:
+    name: API CI
+    runs-on: ubuntu-latest
+
+    env:
+      api_directory: ./DocumentationTranslator/WebServer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          aws-region: eu-west-1
+          role-session-name: API_CI_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Test Build API
+        working-directory: ${{ env.api_directory }}
+        run: dotnet publish -o build
+
+  web-ci:
+    name: Web CI
+    runs-on: ubuntu-latest
+
+    env:
+      web_directory: ./DocumentationTranslator/WebApp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          aws-region: eu-west-1
+          role-session-name: Web_CI_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup for Testing
+        working-directory: ${{ env.web_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
+
+      - name: Test Build Web App
+        working-directory: ${{ env.web_directory }}
+        run: dotnet publish -o build
+
+  cli-ci:
+    name: CLI CI
+    runs-on: ubuntu-latest
+
+    env:
+      cli_test_directory: ./DocumentationTranslator/CliTests
+      cli_directory: ./DocumentationTranslator/Cli
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          aws-region: eu-west-1
+          role-session-name: CLI_CI_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup for Testing
+        working-directory: ${{ env.cli_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_cli.json client_secrets.json
+
+      - name: CLI Unit Tests
+        working-directory: ${{ env.cli_test_directory }}
+        run: dotnet test
+
+      - name: Test Build Web App
+        working-directory: ${{ env.cli_directory }}
+        run: dotnet publish -o build
