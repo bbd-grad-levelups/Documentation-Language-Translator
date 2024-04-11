@@ -143,12 +143,12 @@
 			languages = await getLanguages();
 			Documents = await getDocumentNames();
 
-			if (inputLanguage == null || outputLanguage == null) {
+			if ((inputLanguage == null || outputLanguage == null) && languages.Count > 0) {
 				inputLanguage = languages.FirstOrDefault().Language;
 				outputLanguage = languages.FirstOrDefault().Language;
 			}
 			
-			if (documentID < 0) {
+			if (documentID < 0 && Documents.Count > 0) {
 				documentID = Documents.FirstOrDefault().DocumentID;
 			}
 			
