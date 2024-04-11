@@ -48,7 +48,7 @@ namespace Cli.Commands
 						string content = contentElement.ToString();
 						string title = titleElement.ToString();
 
-						string fullFilePath = Path.Combine(filepath, $"{title}.txt");
+						string fullFilePath = Path.Combine(filepath, $"{title}");
 						File.WriteAllText(fullFilePath, content);
 
 						Console.WriteLine($"\u001b[32mFile downloaded to: {fullFilePath}\u001b[0m");
