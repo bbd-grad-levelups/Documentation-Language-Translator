@@ -35,7 +35,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Setup for Packaging
-        working-directory: ${{ env.web_directory }}
+        working-directory: ${{ env.web_directory }}/Components/Pages/
         run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
 
       - name: Build Web
