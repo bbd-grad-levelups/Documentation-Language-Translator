@@ -192,4 +192,14 @@ public partial class Home
 			StateHasChanged();
 		}
 	}
+
+	public void OnInit()
+	{
+		OnInitialized();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+	}
 }
