@@ -39,10 +39,10 @@
 		<div class="smallContainer">
 			<h2>View a file!</h2>
 			<label> Select the file you want to view:</label>
-			<select name="userFile" @bind="documentName" @bind:event="onchange">
-				@foreach(var currDocName in documentNames)
+			<select name="userFile" @bind="documentID" @bind:event="onchange">
+				@foreach(var currDoc in Documents)
 				{
-					<option value=@currDocName>@currDocName</option>
+					<option value=@currDoc.DocumentID>@currDoc.DocumentName</option>
 				}
 			</select>
 			<button @onclick="ViewFile">View file</button>

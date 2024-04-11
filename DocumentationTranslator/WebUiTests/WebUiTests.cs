@@ -9,7 +9,7 @@ namespace WebUiTests
 		public void TestOnInit()
 		{
 			Home sut = new Home();
-			sut.CallOnInit();
+			sut.CallOnInits();
 
 			Assert.IsNotNull(sut, "Home page did not initialise correctly");
 

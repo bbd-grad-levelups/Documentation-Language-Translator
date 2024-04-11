@@ -74,8 +74,8 @@ public partial class Home
 			inputLanguage = languages.FirstOrDefault().Language;
 			outputLanguage = languages.FirstOrDefault().Language;
 
-			documentNames = await getDocumentNames();
-			documentName = documentNames.FirstOrDefault();
+			Documents = await getDocumentNames();
+			documentID = Documents.FirstOrDefault().DocumentID;
 		}
 		catch(Exception ex)
 		{
@@ -83,8 +83,8 @@ public partial class Home
 			inputLanguage = languages.FirstOrDefault().Language;
 			outputLanguage = languages.FirstOrDefault().Language;
 
-			documentNames = new List<string> { };
-			documentName = documentNames.FirstOrDefault();
+			Documents = new List<Document> { };
+			documentID = Documents.FirstOrDefault().DocumentID;
 		}
 	}
 
@@ -170,21 +170,21 @@ public partial class Home
 
 	// Web UI code:
 	public string? fileContent { get; set; }
-	public string? documentName, newDocumentName;
-	public string messageInfo = "";
+	public string? newDocumentName;
+	public string messageInfo = "Provide valid input";
 	public List<Languages> languages = new List<Languages> { };
-	public List<string> documentNames = new List<string> { };
+	public List<Document> Documents = new List<Document> { };
 	public string? inputLanguage, outputLanguage;
-	public int maxFileSizeBytes = 1024;
+	public int maxFileSizeBytes = 1024, documentID;
 
-	public void CallOnInit()
+	public async Task CallOnInits()
 	{
 		this.OnInitialized();
+		await OnInitializedAsync();
 	}
 
 	protected override void OnInitialized()
 	{
-		messageInfo = "Provide valid input";
 		base.OnInitialized();
 	}
 
@@ -216,10 +216,11 @@ public partial class Home
 				result.Add(tempLang);
 			}
 		}
+		StateHasChanged();
 		return result;
 	}
 
-	private async Task<List<string>> getDocumentNames()
+	private async Task<List<Document>> getDocumentNames()
 	{
 		using var client = new HttpClient();
 
@@ -229,18 +230,24 @@ public partial class Home
 		var response = await client.GetAsync("api/document/names");
 		string responseBody = await response.Content.ReadAsStringAsync();
 
-		var result = new List<string> { };
+		var result = new List<Document> { };
 
 		using(JsonDocument document = JsonDocument.Parse(responseBody))
 		{
 			JsonElement root = document.RootElement;
 
-			foreach(JsonElement currLang in root.EnumerateArray())
+			foreach(JsonElement currDoc in root.EnumerateArray())
 			{
-				var temp = currLang.GetProperty("documentName").ToString();
-				result.Add(temp);
+				var tempDoc = new Document()
+				{
+					DocumentID = int.Parse(currDoc.GetProperty("documentID").ToString()),
+					DocumentName = currDoc.GetProperty("documentName").ToString()
+				};
+
+				result.Add(tempDoc);
 			}
 		}
+		StateHasChanged();
 		return result;
 	}
 
@@ -308,20 +315,35 @@ public partial class Home
 					string docTitle = titleElement.ToString();
 
 					messageInfo = $"Successfully uploaded {docTitle}";
+					showPopup = true;
 				}
+				StateHasChanged();
 			}
 			else
 			{
 				Console.WriteLine($"Error: {response.StatusCode}\u001b[0m");
 			}
 		}
+		await CallOnInits();
+		StateHasChanged();
 	}
 
-	private void ViewFile()
+	private async void ViewFile()
 	{
-		messageInfo = $"viewing: {documentName} content";
-		showPopup = true;
-		// Get docContent
-		fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+		var client = new HttpClient();
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
+		client.BaseAddress = new Uri("http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/");
+
+		var response = await client.GetAsync($"api/document/{documentID}");
+		string responseBody = await response.Content.ReadAsStringAsync();
+
+		using(JsonDocument document = JsonDocument.Parse(responseBody))
+		{
+			JsonElement root = document.RootElement;
+
+			JsonElement documentContent = root.GetProperty("documentContent");
+			fileContent = documentContent.ToString();
+			StateHasChanged();
+		}
 	}
 }
