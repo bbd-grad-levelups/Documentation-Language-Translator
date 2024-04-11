@@ -9,6 +9,7 @@ public class Translator
   public static async Task<string> CallTranslatorAPI(string originalLanguage, string outputLanguage, string text, string apiKey, string endpoint)
   {
     var client = new HttpClient();
+    var tempString = $"[{{\"Text\": \"{text}\"    }}]";
     var request = new HttpRequestMessage
     {
       Method = HttpMethod.Post,
@@ -18,7 +19,7 @@ public class Translator
           { "X-RapidAPI-Key", apiKey },
           { "X-RapidAPI-Host", endpoint },
         },
-      Content = new StringContent($"[{{\"Text\": \"{text}\"    }}]")
+      Content = new StringContent(tempString)
       {
         Headers =
           {

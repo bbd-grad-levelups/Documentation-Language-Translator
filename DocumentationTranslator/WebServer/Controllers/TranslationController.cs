@@ -18,7 +18,8 @@ namespace DocTranslatorServer.Controllers
     [HttpPost("/document")]
     public async Task<ActionResult<TextDocument>> TranslateDocument(TextDocument document)
     {
-      document.DocumentContent = document.DocumentContent.Replace("\n","\\n");
+      document.DocumentContent = document.DocumentContent.Replace("\n", "\\n");
+      document.DocumentContent = document.DocumentContent.Replace("\r", "\\r");
       
       // Get language
       var language = await _lanContext.Language.FindAsync(document.LanguageID);
