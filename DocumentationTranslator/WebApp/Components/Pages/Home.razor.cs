@@ -291,6 +291,12 @@ public partial class Home
 			mustUpload = false;
 			return;
 		}
+		if (!(newDocumentName.EndsWith(".md") || newDocumentName.EndsWith(".txt")))
+		{
+			messageInfo = "Make sure you upload a .txt or .md file ONLY";
+			showPopup = true;
+			mustUpload = false;
+		}
 		if(mustUpload)
 		{
 			var client = new HttpClient();
