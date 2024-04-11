@@ -42,6 +42,7 @@ jobs:
 
     env:
       web_directory: ./DocumentationTranslator/WebApp
+      web_test_directory: ./DocumentationTranslator/WebUiTests
 
     steps:
       - name: Checkout
@@ -62,6 +63,10 @@ jobs:
       - name: Setup for Testing
         working-directory: ${{ env.web_directory }}
         run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
+
+      - name: Web Unit Tests
+        working-directory: ${{ env.web_test_directory }}
+        run: dotnet test
 
       - name: Test Build Web App
         working-directory: ${{ env.web_directory }}
