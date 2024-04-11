@@ -183,6 +183,11 @@ public partial class Home
 		await OnInitializedAsync();
 	}
 
+	public void OnInit()
+	{
+		OnInitialized();
+	}
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
@@ -294,12 +299,15 @@ public partial class Home
 				"http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/api/document");
 			request.Headers.Add("Authorization", idToken);
 
-			var content = new StringContent($"{{\"languageID\":{outputLanguage}," +
-				$"\"documentTitle\":\"{newDocumentName}\"," +
-				$"\"documentContent\":\"{fileContent}\"}}",
-				null, "application/json");
+			var content = new
+			{
+				languageID = outputLanguage,
+				documentTitle = newDocumentName,
+				documentContent = fileContent
+			};
 
-			request.Content = content;
+			request.Content = new StringContent(JsonSerializer.Serialize(content), null, "application/json");
+
 
 			var response = await client.SendAsync(request);
 
