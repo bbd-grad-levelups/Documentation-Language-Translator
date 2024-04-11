@@ -9,12 +9,9 @@
 
 </div>
 
-Welcome to the new and growing cloud solution for managing your Bean Crop Production. AgriCloud provides farmers with easy access to the Bean Cloud via their Google account, empowering them to efficiently manage their bean provisions.
+Introducing Doc#mentation Translator: your passport to seamless document translation tailored for developers. Say goodbye to language barriers and hello to efficient collaboration with our intuitive tool. Streamline workflows, and unleash the power of multilingual coding with our tool today.
 
-Create, Update, Terminate, and Grow!
-
-With AgriCloud, farmers can effortlessly perform a variety of bean-related activities with just a single click. Adjust soil moisture levels with ease, add water as needed! Require more sunlight? No problem! AgriCloud offers real-time crop management capabilities, allowing you to optimize your farming practices and become the best farmer you can be.
-
+Say hello to global coding without missing a single line.
 
 ## Project Resources:
 
