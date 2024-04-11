@@ -30,12 +30,12 @@ namespace Cli.Commands
             string tokenEndpoint = "https://oauth2.googleapis.com/token";
             var tokenRequestContent = new FormUrlEncodedContent(new[]
             {
-                        new KeyValuePair<string, string>("code", authorizationCode),
-                        new KeyValuePair<string, string>("client_id", id),
-                        new KeyValuePair<string, string>("client_secret", secret),
-                        new KeyValuePair<string, string>("redirect_uri", redirectUri),
-                        new KeyValuePair<string, string>("grant_type", "authorization_code")
-                    });
+                new KeyValuePair<string, string>("code", authorizationCode),
+                new KeyValuePair<string, string>("client_id", id),
+                new KeyValuePair<string, string>("client_secret", secret),
+                new KeyValuePair<string, string>("redirect_uri", redirectUri),
+                new KeyValuePair<string, string>("grant_type", "authorization_code")
+            });
 
             var client = new HttpClient();
             var tokenResponse = await client.PostAsync(tokenEndpoint, tokenRequestContent);

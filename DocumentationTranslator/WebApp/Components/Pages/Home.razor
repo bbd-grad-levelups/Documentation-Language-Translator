@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using DocTranslatorServer.Models
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 
@@ -10,50 +11,57 @@
 @* <button @onclick="ShowPopup">Popup</button> *@
 
 <div class="mainDiv">
-	<div class="inputDiv">
-		<div class="smallContainer">
-			<h2>Upload content!</h2>
-			<p>Paste your document contents in the box on the right to translate!</p>
-			<label for="docName">Document name:</label>
-			<input type="text" id="docName" name="docName" class="textInput" @bind-value="newDocumentName">
+	@if (showLoggedIn) {
+		<div class="inputDiv">
+			<div class="smallContainer">
+				<h2>Upload content!</h2>
+				<p>Paste your document contents in the box on the right to translate!</p>
+				<label for="docName">Document name:</label>
+				<input type="text" id="docName" name="docName" class="textInput" @bind-value="newDocumentName">
 
-			<label for="inputLanguage"> Select input langauge:</label>
-			<select id="inputLanguage" name="inputLanguage" @bind="inputLanguage" @bind:event="onchange">
-				@foreach(var l in languages)
-				{
-					<option value=@l.LanguageID>@l.Language</option>
-				}
-			</select>
+				<label for="inputLanguage"> Select input langauge:</label>
+				<select id="inputLanguage" name="inputLanguage" @bind="inputLanguage" @bind:event="onchange">
+					@foreach(var l in languages)
+					{
+						<option value=@l.LanguageID>@l.Language</option>
+					}
+				</select>
 
-			<label for="outputLanguage"> Select output langauge:</label>
-			<select id="outputLanguage" name="outputLanguage" @bind="outputLanguage" @bind:event="onchange">
-				@foreach(var l in languages)
-				{
-					<option value=@l.LanguageID>@l.Language</option>
-				}
-			</select>
+				<label for="outputLanguage"> Select output langauge:</label>
+				<select id="outputLanguage" name="outputLanguage" @bind="outputLanguage" @bind:event="onchange">
+					@foreach(var l in languages)
+					{
+						<option value=@l.LanguageID>@l.Language</option>
+					}
+				</select>
 
-			<p></p>
-			<button @onclick="UploadDocument">Upload!</button>
+				<p></p>
+				<button @onclick="UploadDocument">Upload!</button>
+			</div>
+
+			<div class="smallContainer">
+				<h2>View a file!</h2>
+				<label> Select the file you want to view:</label>
+				<select name="userFile" @bind="documentID" @bind:event="onchange">
+					@foreach(var currDoc in Documents)
+					{
+						<option value=@currDoc.DocumentID>@currDoc.DocumentName</option>
+					}
+				</select>
+				<button @onclick="ViewFile">View file</button>
+			</div>
 		</div>
 
-		<div class="smallContainer">
-			<h2>View a file!</h2>
-			<label> Select the file you want to view:</label>
-			<select name="userFile" @bind="documentID" @bind:event="onchange">
-				@foreach(var currDoc in Documents)
-				{
-					<option value=@currDoc.DocumentID>@currDoc.DocumentName</option>
-				}
-			</select>
-			<button @onclick="ViewFile">View file</button>
+		<div class="viewDiv">
+			<h4>File Content:</h4>
+			<textarea class="inputContent" @bind="fileContent" @bind:event="oninput" />
 		</div>
-	</div>
-
-	<div class="viewDiv">
-		<h4>File Content:</h4>
-		<textarea class="inputContent" @bind="fileContent" @bind:event="oninput" />
-	</div>
+	} else {
+		<div>
+			<h1>We will log you in momentarily, if this doesn't happen within a few seconds please reload the page :)</h1>
+		</div>
+	}
+	
 </div>
 
 @if(showPopup)
@@ -87,79 +95,74 @@
 	private static string clientId = "";
 	private static string clientSecret = "";
 	private string code = "";
-	private string accessToken = "";
-	private string idToken = "";
+	private string? accessToken = null;
+	private string? idToken = null;
+	private bool showLoggedIn;
 
-	protected override async Task OnInitializedAsync()
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		// OAuth stuff:
-		if(clientId == "")
-		{
-			ReadSecrets();
+		if (firstRender) {
+			showLoggedIn = false;
+			accessToken = await JS.InvokeAsync<string>("localStorage.getItem", "accessToken");
+			idToken = await JS.InvokeAsync<string>("localStorage.getItem", "idToken");
 
-			if(clientId != "")
-			{
-				string url = await GetCode();
+			if (clientId == "") {
+				ReadSecrets();
+			}
 
-				Console.WriteLine(url);
+			if (accessToken != null && idToken != null) {
+				SetUpDropDowns();
+			} else {
+				var uri = new Uri(NavigationManager.Uri);
+				var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-				NavigationManager.NavigateTo(url);
+				if (queryParams["code"] != null) {
+					
+					code = queryParams["code"];
 
-				await Task.Delay(5000);
+					await GetTokens();
+					
+					SetUpDropDowns();
+
+				} else {
+					string url = await GetCode();
+
+					Console.WriteLine(url);
+
+					NavigationManager.NavigateTo(url);
+				}
 			}
 		}
-		else if(clientId != "" && idToken == "")
-		{
-			var uri = new Uri(NavigationManager.Uri);
-			var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-			if(queryParams["code"] != null)
-			{
-				code = queryParams["code"];
+	}
 
-				//Console.WriteLine("This is the auth code:");
-				//Console.WriteLine(code);
-
-				await GetTokens();
-
-				//Console.WriteLine("ID Token");
-				//Console.WriteLine(idToken);
-				//Console.WriteLine("Access Token");
-				//Console.WriteLine(accessToken);
-			}
-			else
-			{
-				Console.WriteLine("Unable to extract auth code");
-			}
-		}
-		else if(idToken != "")
-		{
-			//Console.WriteLine("Already logged in");
-			//Console.WriteLine(idToken);
-		}
-		else
-		{
-			Console.WriteLine("Unable to login");
-		}
-
-		// Web UI stuff:
+	private async void SetUpDropDowns() {
 		try
 		{
 			languages = await getLanguages();
-			inputLanguage = languages.FirstOrDefault().Language;
-			outputLanguage = languages.FirstOrDefault().Language;
-
 			Documents = await getDocumentNames();
-			documentID = Documents.FirstOrDefault().DocumentID;
+
+			if (inputLanguage == null || outputLanguage == null) {
+				inputLanguage = languages.FirstOrDefault().Language;
+				outputLanguage = languages.FirstOrDefault().Language;
+			}
+			
+			if (documentID < 0) {
+				documentID = Documents.FirstOrDefault().DocumentID;
+			}
+			
+			showLoggedIn = true;
+			StateHasChanged();
 		}
 		catch(Exception ex)
 		{
 			languages = new List<Languages> {  };
-			inputLanguage = languages.FirstOrDefault().Language;
-			outputLanguage = languages.FirstOrDefault().Language;
+			inputLanguage = "";
+			outputLanguage = "";
 
 			Documents = new List<Document> { };
-			documentID = Documents.FirstOrDefault().DocumentID;
+			documentID = 0;
 		}
 	}
 
@@ -186,21 +189,21 @@
 
 	private async Task GetTokens()
 	{
-		var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
+		string tokenEndpoint = "https://oauth2.googleapis.com/token";
+
+		var tokenRequestContent = new FormUrlEncodedContent(new[]
 		{
-			Content = new FormUrlEncodedContent(new Dictionary<string, string>
-			{
-				["code"] = code,
-				["client_id"] = clientId,
-				["client_secret"] = clientSecret,
-				["redirect_uri"] = redirectUri,
-				["grant_type"] = "authorization_code"
-			})
-		};
+			new KeyValuePair<string, string>("code", code),
+			new KeyValuePair<string, string>("client_id", clientId),
+			new KeyValuePair<string, string>("client_secret", clientSecret),
+			new KeyValuePair<string, string>("redirect_uri", redirectUri),
+			new KeyValuePair<string, string>("grant_type", "authorization_code")
+		});
 
 		using(var client = new HttpClient())
 		{
-			var response = await client.SendAsync(tokenRequest);
+			
+			var response = await client.PostAsync(tokenEndpoint, tokenRequestContent);
 			if(response.IsSuccessStatusCode)
 			{
 				var content = await response.Content.ReadAsStringAsync();
@@ -211,8 +214,11 @@
 				{
 					//Console.WriteLine("Writing tokens");
 					//Console.WriteLine(accessTokenElement);
+					
 					accessToken = accessTokenElement.GetString();
 					idToken = idTokenElement.GetString();
+					await JS.InvokeVoidAsync("localStorage.setItem", "accessToken", accessToken);
+					await JS.InvokeVoidAsync("localStorage.setItem", "idToken", idToken);
 				}
 				else
 				{

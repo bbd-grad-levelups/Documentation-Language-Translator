@@ -14,23 +14,7 @@ public partial class Home
 	public List<Languages> languages = new List<Languages> { };
 	public List<Document> Documents = new List<Document> { };
 	public string? inputLanguage, outputLanguage;
-	public int maxFileSizeBytes = 1024, documentID;
-
-	public async Task CallOnInits()
-	{
-		this.OnInitialized();
-		await OnInitializedAsync();
-	}
-
-	public void OnInit()
-	{
-		OnInitialized();
-	}
-
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-	}
+	public int maxFileSizeBytes = 1024, documentID = -1;
 
 	// Functions to call the API:
 	private async Task<List<Languages>> getLanguages()
@@ -60,7 +44,7 @@ public partial class Home
 				result.Add(tempLang);
 			}
 		}
-		StateHasChanged();
+		
 		return result;
 	}
 
@@ -91,7 +75,7 @@ public partial class Home
 				result.Add(tempDoc);
 			}
 		}
-		StateHasChanged();
+
 		return result;
 	}
 
@@ -170,15 +154,16 @@ public partial class Home
 					messageInfo = $"Successfully uploaded {docTitle}";
 					showPopup = true;
 				}
-				StateHasChanged();
+				
+				SetUpDropDowns();
 			}
 			else
 			{
 				Console.WriteLine($"Error: {response.StatusCode}\u001b[0m");
 			}
 		}
-		await CallOnInits();
-		StateHasChanged();
+		
+		SetUpDropDowns();
 	}
 
 	private async void ViewFile()
