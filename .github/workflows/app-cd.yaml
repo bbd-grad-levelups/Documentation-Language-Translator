@@ -191,7 +191,7 @@ jobs:
         run: chmod +x rmk
 
       - name: Load Release Key
-        run: ./rmk load-release-key "${{ secrets.RELEASE_KEY }}"
+        run: ./rmk load-release-key "${{ secrets.RMK_KEY }}"
 
       - name: Publish Release and Notify Testers
         run: ./rmk create-release "Release-${{ github.run_number }}" "https://github.com/bbd-grad-levelups/Documentation-Language-Translator/releases/tag/latest"
