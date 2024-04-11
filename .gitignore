@@ -268,3 +268,4 @@ FakesAssemblies/
 # Secrets
 DocumentationTranslator/Cli/client_secrets.json
 DocumentationTranslator/WebApp/Components/Pages/client_secrets.json
+DocumentationTranslator/WebApp/Components/Pages/client_secrets 2.json
