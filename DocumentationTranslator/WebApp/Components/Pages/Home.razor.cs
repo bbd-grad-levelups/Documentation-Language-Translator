@@ -106,6 +106,14 @@ public partial class Home
 			mustUpload = false;
 			return;
 		}
+		if(newDocumentName.Length > 15) 
+		{
+			// Tell the user that their docname is invalid
+			messageInfo = "Please give the new document a name within 15 charactrs.";
+			showPopup = true;
+			mustUpload = false;
+			return;
+		}
 		if(String.IsNullOrEmpty(fileContent))
 		{
 			// Tell the user that they must enter file content
