@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace WebApp.Components.Pages;
 
@@ -15,6 +16,7 @@ public partial class Home
 
 	protected override async Task OnInitializedAsync()
 	{
+		// OAuth stuff:
 		if(clientId == "")
 		{
 			ReadSecrets();
@@ -62,6 +64,26 @@ public partial class Home
 		else
 		{
 			Console.WriteLine("Unable to login");
+		}
+
+		// Web UI stuff:
+		try
+		{
+			languages = await getLanguages();
+			inputLanguage = languages.FirstOrDefault();
+			outputLanguage = languages.FirstOrDefault();
+
+			documentNames = await getDocumentNames();
+			documentName = documentNames.FirstOrDefault();
+		}
+		catch(Exception ex)
+		{
+			languages = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
+			inputLanguage = languages.FirstOrDefault();
+			outputLanguage = languages.FirstOrDefault();
+
+			documentNames = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
+			documentName = documentNames.FirstOrDefault();
 		}
 	}
 
@@ -148,9 +170,9 @@ public partial class Home
 	// Web UI code:
 	public string? fileContent { get; set; }
 	public string? documentName, newDocumentName;
-	public string messageInfo;
-	public List<string> languages;
-	public List<string> documentNames;
+	public string messageInfo = "";
+	public List<string> languages = new List<string> { };
+	public List<string> documentNames = new List<string> { };
 	public string? inputLanguage, outputLanguage;
 	public int maxFileSizeBytes = 1024;
 
@@ -162,38 +184,57 @@ public partial class Home
 	protected override void OnInitialized()
 	{
 		messageInfo = "Provide valid input";
-		try
-		{
-			languages = getLanguages();
-			inputLanguage = languages.FirstOrDefault();
-			outputLanguage = languages.FirstOrDefault();
-
-			documentNames = getDocumentNames();
-			documentName = documentNames.FirstOrDefault();
-		}
-		catch(Exception ex)
-		{
-			languages = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
-			inputLanguage = languages.FirstOrDefault();
-			outputLanguage = languages.FirstOrDefault();
-
-			documentNames = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
-			documentName = documentNames.FirstOrDefault();
-		}
-
 		base.OnInitialized();
 	}
 
 	// Functions to call the API:
-	private List<string> getLanguages()
+	private async Task<List<string>> getLanguages()
 	{
-		var result = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
+		using var client = new HttpClient();
+
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
+		client.BaseAddress = new Uri("http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/");
+
+		var response = await client.GetAsync("api/languages");
+		string responseBody = await response.Content.ReadAsStringAsync();
+
+		var result = new List<string> { };
+
+		using(JsonDocument document = JsonDocument.Parse(responseBody))
+		{
+			JsonElement root = document.RootElement;
+
+			foreach (JsonElement currLang in root.EnumerateArray())
+			{
+				var temp = currLang.GetProperty("language").ToString();
+				result.Add(temp);
+			}
+		}
 		return result;
 	}
 
-	private List<string> getDocumentNames()
+	private async Task<List<string>> getDocumentNames()
 	{
-		var result = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
+		using var client = new HttpClient();
+
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
+		client.BaseAddress = new Uri("http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/");
+
+		var response = await client.GetAsync("api/document/names");
+		string responseBody = await response.Content.ReadAsStringAsync();
+
+		var result = new List<string> { };
+
+		using(JsonDocument document = JsonDocument.Parse(responseBody))
+		{
+			JsonElement root = document.RootElement;
+
+			foreach(JsonElement currLang in root.EnumerateArray())
+			{
+				var temp = currLang.GetProperty("documentName").ToString();
+				result.Add(temp);
+			}
+		}
 		return result;
 	}
 
