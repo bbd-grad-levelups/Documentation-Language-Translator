@@ -34,6 +34,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup for Packaging
+        working-directory: ${{ env.web_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
+
       - name: Build Web
         working-directory: ${{ env.web_directory }}
         run: dotnet publish -o build
@@ -97,7 +101,7 @@ jobs:
 
       - name: Setup for Packaging
         working-directory: ${{ env.cli_directory }}
-        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets.json client_secrets.json
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_cli.json client_secrets.json
 
       - name: Build Windows CLI
         working-directory: ${{ env.cli_directory }}

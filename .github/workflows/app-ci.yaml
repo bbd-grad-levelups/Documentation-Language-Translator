@@ -59,6 +59,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup for Testing
+        working-directory: ${{ env.web_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_web.json client_secrets.json
+
       - name: Test Build Web App
         working-directory: ${{ env.web_directory }}
         run: dotnet publish -o build
@@ -87,9 +91,17 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup for Testing
+        working-directory: ${{ env.cli_test_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_cli.json client_secrets.json
+
       - name: CLI Unit Tests
         working-directory: ${{ env.cli_test_directory }}
         run: dotnet test
+
+      - name: Setup for Build
+        working-directory: ${{ env.cli_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets_cli.json client_secrets.json
 
       - name: Test Build Web App
         working-directory: ${{ env.cli_directory }}
