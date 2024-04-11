@@ -20,7 +20,7 @@
 			<select id="inputLanguage" name="inputLanguage" @bind="inputLanguage" @bind:event="onchange">
 				@foreach(var l in languages)
 				{
-					<option value=@l>@l</option>
+					<option value=@l.LanguageID>@l.Language</option>
 				}
 			</select>
 
@@ -28,7 +28,7 @@
 			<select id="outputLanguage" name="outputLanguage" @bind="outputLanguage" @bind:event="onchange">
 				@foreach(var l in languages)
 				{
-					<option value=@l>@l</option>
+					<option value=@l.LanguageID>@l.Language</option>
 				}
 			</select>
 

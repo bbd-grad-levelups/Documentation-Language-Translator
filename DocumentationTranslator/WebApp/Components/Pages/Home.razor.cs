@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using DocTranslatorServer.Models;
 
 namespace WebApp.Components.Pages;
 
@@ -70,19 +71,19 @@ public partial class Home
 		try
 		{
 			languages = await getLanguages();
-			inputLanguage = languages.FirstOrDefault();
-			outputLanguage = languages.FirstOrDefault();
+			inputLanguage = languages.FirstOrDefault().Language;
+			outputLanguage = languages.FirstOrDefault().Language;
 
 			documentNames = await getDocumentNames();
 			documentName = documentNames.FirstOrDefault();
 		}
 		catch(Exception ex)
 		{
-			languages = new List<string> { "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four", "one", "two", "three", "four" };
-			inputLanguage = languages.FirstOrDefault();
-			outputLanguage = languages.FirstOrDefault();
+			languages = new List<Languages> {  };
+			inputLanguage = languages.FirstOrDefault().Language;
+			outputLanguage = languages.FirstOrDefault().Language;
 
-			documentNames = new List<string> { "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5", "doc1", "doc2", "doc3", "doc4", "doc5" };
+			documentNames = new List<string> { };
 			documentName = documentNames.FirstOrDefault();
 		}
 	}
@@ -171,7 +172,7 @@ public partial class Home
 	public string? fileContent { get; set; }
 	public string? documentName, newDocumentName;
 	public string messageInfo = "";
-	public List<string> languages = new List<string> { };
+	public List<Languages> languages = new List<Languages> { };
 	public List<string> documentNames = new List<string> { };
 	public string? inputLanguage, outputLanguage;
 	public int maxFileSizeBytes = 1024;
@@ -188,7 +189,7 @@ public partial class Home
 	}
 
 	// Functions to call the API:
-	private async Task<List<string>> getLanguages()
+	private async Task<List<Languages>> getLanguages()
 	{
 		using var client = new HttpClient();
 
@@ -198,7 +199,7 @@ public partial class Home
 		var response = await client.GetAsync("api/languages");
 		string responseBody = await response.Content.ReadAsStringAsync();
 
-		var result = new List<string> { };
+		var result = new List<Languages> { };
 
 		using(JsonDocument document = JsonDocument.Parse(responseBody))
 		{
@@ -206,8 +207,13 @@ public partial class Home
 
 			foreach (JsonElement currLang in root.EnumerateArray())
 			{
-				var temp = currLang.GetProperty("language").ToString();
-				result.Add(temp);
+				var tempLang = new Languages()
+				{
+					LanguageID = int.Parse(currLang.GetProperty("languageID").ToString()),
+					Language = currLang.GetProperty("language").ToString(),
+					Abbreviation = currLang.GetProperty("abbreviation").ToString()
+				};
+				result.Add(tempLang);
 			}
 		}
 		return result;
@@ -238,7 +244,7 @@ public partial class Home
 		return result;
 	}
 
-	private void UploadDocument()
+	private async void UploadDocument()
 	{
 		var mustUpload = true;
 		if(String.IsNullOrEmpty(newDocumentName))
@@ -275,11 +281,39 @@ public partial class Home
 		}
 		if(mustUpload)
 		{
-			// Upload the file:
-			var body = $"documentName:{newDocumentName},\ndocumentContents:{fileContent},\ninputLanguage:{inputLanguage},\noutputLanguage:{outputLanguage}";
-			// Send it here
-			messageInfo = body;
-			showPopup = true;
+			var client = new HttpClient();
+
+			var request = new HttpRequestMessage(HttpMethod.Post,
+				"http://doc-translator-env.eba-egxmirhg.eu-west-1.elasticbeanstalk.com/api/document");
+			request.Headers.Add("Authorization", idToken);
+
+			var content = new StringContent($"{{\"languageID\":{outputLanguage}," +
+				$"\"documentTitle\":\"{newDocumentName}\"," +
+				$"\"documentContent\":\"{fileContent}\"}}",
+				null, "application/json");
+
+			request.Content = content;
+
+			var response = await client.SendAsync(request);
+
+			if(response.IsSuccessStatusCode)
+			{
+				string responseBody = await response.Content.ReadAsStringAsync();
+
+				using(JsonDocument document = JsonDocument.Parse(responseBody))
+				{
+					JsonElement root = document.RootElement;
+
+					JsonElement titleElement = root.GetProperty("documentTitle");
+					string docTitle = titleElement.ToString();
+
+					messageInfo = $"Successfully uploaded {docTitle}";
+				}
+			}
+			else
+			{
+				Console.WriteLine($"Error: {response.StatusCode}\u001b[0m");
+			}
 		}
 	}
 
