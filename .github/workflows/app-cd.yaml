@@ -183,3 +183,15 @@ jobs:
           asset_path: ${{ env.cli_directory }}/cli-macos-x64.tar.gz
           asset_name: cli-macos-x64.tar.gz
           asset_content_type: application/tar.gz
+
+      - name: Download rel-monkey
+        run: curl --location --request GET https://github.com/Release-Monkey/release-monkey/releases/download/latest/rmk --output rmk
+
+      - name: Mark rel-monkey executable
+        run: chmod +x rmk
+
+      - name: Load Release Key
+        run: ./rmk load-release-key "${{ secrets.RELEASE_KEY }}"
+
+      - name: Publish Release and Notify Testers
+        run: ./rmk create-release "Release-${{ github.run_number }}" "https://github.com/bbd-grad-levelups/Documentation-Language-Translator/releases/tag/latest"
