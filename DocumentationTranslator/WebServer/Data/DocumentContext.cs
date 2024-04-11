@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using DocTranslatorServer.Models;
 
-public class DocumentContext : DbContext
+namespace DocTranslatorServer.Data;
+
+public class DocumentContext(DbContextOptions<DocumentContext> options) : DbContext(options)
 {
-  public DocumentContext(DbContextOptions<DocumentContext> options)
-    : base(options)
-  {
-  }
-
-  public DbSet<DocTranslatorServer.Models.Document> Document { get; set; } = default!;
+  public DbSet<Document> Document { get; set; } = default!;
 }

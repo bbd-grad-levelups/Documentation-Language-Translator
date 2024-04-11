@@ -5,17 +5,18 @@ on:
 
 permissions:
   checks: write
-  contents: read
   id-token: write
-
-env:
-  api_directory: ./DocumentationTranslator/WebServer
-  web_directory: ./DocumentationTranslator/WebApp
+  contents: write
+  security-events: write
 
 jobs:
   server-deploy:
-    name: Deploy API and Web App
+    name: API and Web App Deploy
     runs-on: ubuntu-latest
+
+    env:
+      api_directory: ./DocumentationTranslator/WebServer
+      web_directory: ./DocumentationTranslator/WebApp
 
     steps:
       - name: Checkout
@@ -24,9 +25,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@main
         with:
-          role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           aws-region: eu-west-1
-          role-session-name: Web_CD_GitHub_to_AWS_via_FederatedOIDC
+          role-session-name: Server_CD_GitHub_to_AWS_via_FederatedOIDC
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -34,21 +35,21 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build Web
-        working-directory: ${{env.web_directory}}
+        working-directory: ${{ env.web_directory }}
         run: dotnet publish -o build
   
       - name: Create Web Package
-        working-directory: ${{env.web_directory}}
+        working-directory: ${{ env.web_directory }}
         run: | 
           cd build
           zip -r ../web.zip . -x '*.git*']
 
       - name: Build API
-        working-directory: ${{env.api_directory}}
+        working-directory: ${{ env.api_directory }}
         run: dotnet publish -o build
   
       - name: Create API Package
-        working-directory: ${{env.api_directory}}
+        working-directory: ${{ env.api_directory }}
         run: | 
           cd build
           zip -r ../api.zip . -x '*.git*'
@@ -56,9 +57,9 @@ jobs:
       - name: Create Deployment Package
         run: | 
           aws s3 cp s3://doc-translator-deploy-bucket/aws-windows-deployment-manifest.json aws-windows-deployment-manifest.json
-          zip deployment.zip ${{env.api_directory}}/api.zip ${{env.web_directory}}/web.zip aws-windows-deployment-manifest.json --junk-paths
+          zip deployment.zip ${{ env.api_directory }}/api.zip ${{ env.web_directory }}/web.zip aws-windows-deployment-manifest.json --junk-paths
 
-      - name: Deploy Web
+      - name: Deploy Server
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ env.AWS_ACCESS_KEY_ID }}
@@ -70,3 +71,86 @@ jobs:
           region: eu-west-1
           deployment_package: deployment.zip
           existing_bucket_name: doc-translator-deploy-bucket
+
+  cli-deploy:
+    name: CLI Release
+    runs-on: ubuntu-latest
+
+    env:
+      cli_directory: ./DocumentationTranslator/Cli
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          aws-region: eu-west-1
+          role-session-name: Cli_CD_GitHub_to_AWS_via_FederatedOIDC
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup for Packaging
+        working-directory: ${{ env.cli_directory }}
+        run: aws s3 cp s3://doc-translator-deploy-bucket/client_secrets.json client_secrets.json
+
+      - name: Build Windows CLI
+        working-directory: ${{ env.cli_directory }}
+        run: dotnet publish -c Release -r win-x64 --self-contained true -o doc_translator_cli_windows
+  
+      - name: Create Windows CLI Package
+        working-directory: ${{ env.cli_directory }}
+        run: zip -r cli-windows-x64.zip ./doc_translator_cli_windows/* -x '*.git*'
+
+      - name: Build Linux CLI
+        working-directory: ${{ env.cli_directory }}
+        run: dotnet publish -c Release -r linux-x64 --self-contained true -o doc_translator_cli_linux
+  
+      - name: Create Linux CLI Package
+        working-directory: ${{ env.cli_directory }}
+        run: tar --exclude='*.git*' -czvf cli-linux-x64.tar.gz doc_translator_cli_linux
+
+      - uses: cb80/delrel@latest
+        with:
+          tag: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: cli
+          body: |
+            Packaged CLI
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset (Windows)
+        id: upload-release-asset-win 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.cli_directory }}/cli-windows-x64.zip
+          asset_name: cli-windows-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset (Linux)
+        id: upload-release-asset-linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.cli_directory }}/cli-linux-x64.tar.gz
+          asset_name: cli-linux-x64.tar.gz
+          asset_content_type: application/tar.gz

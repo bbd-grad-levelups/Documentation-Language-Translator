@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using DocTranslatorServer.Models;
 
-public class UserContext : DbContext
+namespace DocTranslatorServer.Data;
+
+public class UserContext(DbContextOptions<UserContext> options) : DbContext(options)
 {
-  public UserContext(DbContextOptions<UserContext> options)
-    : base(options)
-  {
-  }
-
-  public DbSet<DocTranslatorServer.Models.User> User { get; set; } = default!;
+  public DbSet<User> User { get; set; } = default!;
 }
